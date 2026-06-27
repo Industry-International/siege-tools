@@ -181,8 +181,8 @@ public class AmmoKitEntity extends Entity {
         boolean allFull = true;
 
         for (ServerPlayer targetPlayer : players) {
-            // 检查同队（通过 SiegeToolsAPI 会话层获取）
-            String playerTeam = SiegeToolsAPI.getPlayerTeam(targetPlayer);
+            // 检查同队（从 player.persistentData 读取，由 KubeJS 写入）
+            String playerTeam = targetPlayer.getPersistentData().getString("team");
             if (ownerTeam.isEmpty() || !ownerTeam.equals(playerTeam)) {
                 continue;
             }

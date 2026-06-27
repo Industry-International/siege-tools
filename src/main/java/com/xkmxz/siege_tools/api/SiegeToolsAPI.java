@@ -18,29 +18,27 @@ import org.slf4j.Logger;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
- * SiegeTools API — KubeJS ↔ Java 桥接类
+ * SiegeTools API — 弹药配置管理与弹药发放逻辑
  *
  * === 数据流 ===
  *
  * 1. 服务端启动时：
  *    KubeJS  →  clearAndRegister(ammoConfigJson)  注册全局弹药配置表
- *    KubeJS  →  updatePlayerSession(uuid, sessionJson)  为每位在线玩家创建会话
  *
- * 2. 玩家切换武器时：
- *    KubeJS  →  updatePlayerSession(uuid, sessionJson)  更新会话（覆盖旧数据）
- *
- * 3. 玩家退出时：
- *    KubeJS  →  removePlayerSession(uuid)  清理会话
+ * 2. 玩家交互时（AmmoKitItem / AmmoKitEntity）：
+ *    Java    →  从 player.persistentData 直接读取武器 ID 和队伍
+ *               （由 KubeJS 写入，无推送延迟问题）
+ *    Java    →  查 AMMO_CONFIG_MAP 获得弹药配置 → 发放弹药
  *
  * === 设计原则 ===
  *
- * - Java 是玩家会话数据的「唯一消费者」，不再读取 player.getPersistentData()
- * - KubeJS 是玩家会话数据的「唯一生产者」，在数据变更时主动推送更新
- * - 弹药配置表和玩家会话均通过 JSON 字符串传入，类型明确，无隐式依赖
- * - 移除了旧的 PLAYER_WEAPONS_MAP + persistentData 回退的双源设计
+ * - 弹药配置表（全局）由 KubeJS 通过 JSON 注册，Java 侧只做查表。
+ * - 玩家武器/队伍数据不从 Java 侧管理，直接从 player.persistentData 读取。
+ *   KubeJS 写入 persistentData，Java 同步读取（消除了旧版推送机制的时序问题）。
+ * - Java 只负责：查弹药配置 + 背包操作 + 弹药发放。
+ * - KubeJS 只负责：维护玩家武器/队伍/职业等业务状态。
  */
 public class SiegeToolsAPI {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -62,30 +60,6 @@ public class SiegeToolsAPI {
         public String gunId;     // TACZ 枪械 ID（弹药盒标记用）
         public String item;      // 非 TACZ 物品 ID
         public int count;        // 非 TACZ 物品数量
-    }
-
-    // ======================================================================
-    //  玩家会话数据表（KubeJS 在数据变更时推送更新）
-    // ======================================================================
-
-    private static final Map<UUID, PlayerSession> PLAYER_SESSION_MAP = new HashMap<>();
-
-    public static class PlayerSession {
-        /** 主武器 ID，空串表示无 */
-        public String mainWeapon;
-        /** 副武器 ID，空串表示无 */
-        public String offhandWeapon;
-        /** 特殊武器 ID，空串表示无 */
-        public String specialWeapon;
-        /** 所属队伍，空串表示无队伍 */
-        public String team;
-
-        public PlayerSession() {
-            this.mainWeapon = "";
-            this.offhandWeapon = "";
-            this.specialWeapon = "";
-            this.team = "";
-        }
     }
 
     // ======================================================================
@@ -115,7 +89,7 @@ public class SiegeToolsAPI {
      */
     public static void clearAndRegister(String json) {
         AMMO_CONFIG_MAP.clear();
-        initialized = false; // 先重置标志，防止注册失败后仍为 true
+        initialized = false;
         try {
             Type type = new TypeToken<Map<String, AmmoConfig>>() {}.getType();
             Map<String, AmmoConfig> configs = GSON.fromJson(json, type);
@@ -141,82 +115,38 @@ public class SiegeToolsAPI {
     }
 
     // ======================================================================
-    //  玩家会话管理
+    //  玩家数据读取（从 player.persistentData，由 KubeJS 写入）
     // ======================================================================
 
     /**
-     * 更新（或创建）玩家的会话数据。
-     * 由 KubeJS 在以下时机调用：
-     *   - 玩家加入服务器（PlayerEvents.loggedIn）
-     *   - 玩家在 GUI 中切换武器/队伍
-     *   - /kubejs reload 后重新注册所有在线玩家
-     *
-     * JSON 格式：
-     * {
-     *   "mainWeapon": "ak47",
-     *   "offhandWeapon": "mars",
-     *   "specialWeapon": "snowball",
-     *   "team": "blue"
-     * }
-     * 所有字段均为可选的字符串，缺失或 null 等价于空串（表示无）。
-     * 传入整个 JSON 对象会覆盖该玩家的全部旧会话数据。
-     */
-    public static void updatePlayerSession(String playerUUID, String sessionJson) {
-        try {
-            UUID uuid = UUID.fromString(playerUUID);
-            PlayerSession session = GSON.fromJson(sessionJson, PlayerSession.class);
-            if (session == null) {
-                // 传入 null → 移除该玩家会话（等价于 removePlayerSession）
-                PLAYER_SESSION_MAP.remove(uuid);
-                LOGGER.info("[SiegeToolsAPI] updatePlayerSession: 会话为 null，已移除玩家 [{}]", playerUUID);
-                return;
-            }
-            // 确保 null 字段转为空串
-            if (session.mainWeapon == null) session.mainWeapon = "";
-            if (session.offhandWeapon == null) session.offhandWeapon = "";
-            if (session.specialWeapon == null) session.specialWeapon = "";
-            if (session.team == null) session.team = "";
-
-            PLAYER_SESSION_MAP.put(uuid, session);
-            LOGGER.info("[SiegeToolsAPI] updatePlayerSession: {} -> main=[{}] off=[{}] sp=[{}] team=[{}]",
-                    playerUUID, session.mainWeapon, session.offhandWeapon, session.specialWeapon, session.team);
-        } catch (Exception e) {
-            LOGGER.error("[SiegeToolsAPI] updatePlayerSession 失败: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 移除玩家的会话数据。
-     * 由 KubeJS 在玩家退出时调用（PlayerEvents.loggedOut）。
-     */
-    public static void removePlayerSession(String playerUUID) {
-        try {
-            UUID uuid = UUID.fromString(playerUUID);
-            PLAYER_SESSION_MAP.remove(uuid);
-            LOGGER.info("[SiegeToolsAPI] removePlayerSession: {}", playerUUID);
-        } catch (Exception e) {
-            LOGGER.error("[SiegeToolsAPI] removePlayerSession 失败: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 获取玩家的会话数据。
-     * 如果查不到（KubeJS 尚未同步），返回空会话（所有字段为空串），并记录警告。
-     */
-    private static PlayerSession getPlayerSession(ServerPlayer player) {
-        PlayerSession session = PLAYER_SESSION_MAP.get(player.getUUID());
-        if (session != null) return session;
-        LOGGER.warn("[SiegeToolsAPI] 玩家 [{}] 无会话数据（KubeJS 未同步），返回空数据",
-                player.getName().getString());
-        return new PlayerSession();
-    }
-
-    /**
-     * 从玩家会话中获取队伍。
-     * 用于 AmmoKitItem / AmmoKitEntity 检查同队逻辑。
+     * 从玩家的 persistentData 读取队伍名。
+     * KubeJS 在 team_selector_gui.js 中写入 player.persistentData.team。
      */
     public static String getPlayerTeam(ServerPlayer player) {
-        return getPlayerSession(player).team;
+        return player.getPersistentData().getString("team");
+    }
+
+    /**
+     * 从玩家的 persistentData 读取指定类别的武器 ID。
+     *
+     * @param player   目标玩家
+     * @param category 类别："primary"（mainWeapon）, "secondary"（offhandWeapon）, "tertiary"（specialWeapon）
+     * @return 武器 ID 字符串（空串表示无）
+     */
+    public static String getPlayerWeaponId(ServerPlayer player, String category) {
+        String key = switch (category) {
+            case "primary" -> "mainWeapon";
+            case "secondary" -> "offhandWeapon";
+            case "tertiary" -> "specialWeapon";
+            default -> "";
+        };
+        if (key.isEmpty()) return "";
+        String raw = player.getPersistentData().getString(key);
+        // 清理可能的引号（兼容 KubeJS 某些 API 带引号存储的情况）
+        if (raw != null) {
+            raw = raw.replace("\"", "").trim();
+        }
+        return raw != null ? raw : "";
     }
 
     // ======================================================================
@@ -225,6 +155,7 @@ public class SiegeToolsAPI {
 
     /**
      * 补充玩家全部武器的弹药。
+     * 武器 ID 从 player.persistentData 的 mainWeapon/offhandWeapon/specialWeapon 读取。
      *
      * @param player   目标玩家
      * @param primary   是否补充主武器
@@ -233,31 +164,38 @@ public class SiegeToolsAPI {
      * @return 是否补充了任何弹药
      */
     public static boolean refillPlayerAmmo(ServerPlayer player, boolean primary, boolean secondary, boolean tertiary) {
-        PlayerSession session = getPlayerSession(player);
+        String mainWeapon = primary ? getPlayerWeaponId(player, "primary") : "";
+        String offhandWeapon = secondary ? getPlayerWeaponId(player, "secondary") : "";
+        String specialWeapon = tertiary ? getPlayerWeaponId(player, "tertiary") : "";
+
         LOGGER.info("[SiegeToolsAPI] refillPlayerAmmo: main=[{}] off=[{}] sp=[{}]",
-                session.mainWeapon, session.offhandWeapon, session.specialWeapon);
+                mainWeapon, offhandWeapon, specialWeapon);
 
         boolean anyRefilled = false;
-        if (primary && !session.mainWeapon.isEmpty()) {
-            if (giveAmmoToPlayer(player, session.mainWeapon, "primary")) anyRefilled = true;
+        if (!mainWeapon.isEmpty()) {
+            if (giveAmmoToPlayer(player, mainWeapon, "primary")) anyRefilled = true;
         }
-        if (secondary && !session.offhandWeapon.isEmpty()) {
-            if (giveAmmoToPlayer(player, session.offhandWeapon, "secondary")) anyRefilled = true;
+        if (!offhandWeapon.isEmpty()) {
+            if (giveAmmoToPlayer(player, offhandWeapon, "secondary")) anyRefilled = true;
         }
-        if (tertiary && !session.specialWeapon.isEmpty()) {
-            if (giveAmmoToPlayer(player, session.specialWeapon, "tertiary")) anyRefilled = true;
+        if (!specialWeapon.isEmpty()) {
+            if (giveAmmoToPlayer(player, specialWeapon, "tertiary")) anyRefilled = true;
         }
         return anyRefilled;
     }
 
     /**
      * 检查玩家所有武器弹药是否已满。
+     * 武器 ID 从 player.persistentData 读取。
      */
     public static boolean isPlayerFullySupplied(ServerPlayer player) {
-        PlayerSession session = getPlayerSession(player);
-        if (!session.mainWeapon.isEmpty() && !isAmmoFull(player, session.mainWeapon, "primary")) return false;
-        if (!session.offhandWeapon.isEmpty() && !isAmmoFull(player, session.offhandWeapon, "secondary")) return false;
-        if (!session.specialWeapon.isEmpty() && !isAmmoFull(player, session.specialWeapon, "tertiary")) return false;
+        String mainWeapon = getPlayerWeaponId(player, "primary");
+        String offhandWeapon = getPlayerWeaponId(player, "secondary");
+        String specialWeapon = getPlayerWeaponId(player, "tertiary");
+
+        if (!mainWeapon.isEmpty() && !isAmmoFull(player, mainWeapon, "primary")) return false;
+        if (!offhandWeapon.isEmpty() && !isAmmoFull(player, offhandWeapon, "secondary")) return false;
+        if (!specialWeapon.isEmpty() && !isAmmoFull(player, specialWeapon, "tertiary")) return false;
         return true;
     }
 

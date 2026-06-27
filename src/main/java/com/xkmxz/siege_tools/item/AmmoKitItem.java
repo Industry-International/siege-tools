@@ -55,19 +55,9 @@ public class AmmoKitItem extends Item {
             return InteractionResult.PASS;
         }
 
-        // 检查队伍：同队或目标是本人（通过 SiegeToolsAPI 会话层获取）
-        String myTeam;
-        String targetTeam;
-        if (player instanceof ServerPlayer sp) {
-            myTeam = SiegeToolsAPI.getPlayerTeam(sp);
-        } else {
-            myTeam = player.getPersistentData().getString("team");
-        }
-        if (targetPlayer instanceof ServerPlayer tp) {
-            targetTeam = SiegeToolsAPI.getPlayerTeam(tp);
-        } else {
-            targetTeam = targetPlayer.getPersistentData().getString("team");
-        }
+        // 检查队伍：同队或目标是本人（从 player.persistentData 读取，由 KubeJS 写入）
+        String myTeam = ((ServerPlayer) player).getPersistentData().getString("team");
+        String targetTeam = targetPlayer.getPersistentData().getString("team");
         boolean sameTeam = myTeam.equals(targetTeam) && !myTeam.isEmpty() && !"none".equals(myTeam);
         boolean isSelf = player == target;
 
@@ -155,7 +145,7 @@ public class AmmoKitItem extends Item {
         float yaw = (float) (Math.random() * 2.0 - 1.0) * 180.0f;
 
         AmmoKitEntity entity = new AmmoKitEntity(siege_tools.AMMO_KIT_ENTITY.get(), level);
-        entity.setOwnerTeam(SiegeToolsAPI.getPlayerTeam(player));
+        entity.setOwnerTeam(player.getPersistentData().getString("team"));
         entity.moveTo(
                 player.getX(),
                 player.getEyeY() - 0.25,
