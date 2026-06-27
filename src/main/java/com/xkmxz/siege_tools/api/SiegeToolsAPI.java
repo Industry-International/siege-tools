@@ -298,45 +298,50 @@ public class SiegeToolsAPI {
         if (cfg.ammoId == null || cfg.ammoId.isEmpty() || ammoNeeded <= 0) return false;
 
         if (cfg.level > 0) {
-            // 弹药盒模式
+            // 弹药盒模式：先移除旧弹药盒，再给一个新弹药盒（设值而非叠加）
             Item boxItem = findItem("tacz", "ammo_box");
             if (boxItem == Items.AIR) {
                 LOGGER.warn("[SiegeToolsAPI] tacz:ammo_box 不存在，降级为直接发放");
                 return giveDirectTaczAmmo(player, cfg, ammoNeeded);
             }
+            removeMatchingAmmoBoxes(player, cfg.ammoId);
+
             ItemStack ammoStack = new ItemStack(boxItem, 1);
             CompoundTag tag = new CompoundTag();
             tag.putString("AmmoId", cfg.ammoId != null ? cfg.ammoId : "");
             tag.putInt("AmmoCount", ammoNeeded);
             tag.putInt("Level", cfg.level);
             ammoStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-            ItemHandlerHelper.giveItemToPlayer(player, ammoStack);
+            giveToBackpack(player, ammoStack);
             LOGGER.info("[SiegeToolsAPI] 发放弹药盒: AmmoId={}, AmmoCount={}, Level={}", cfg.ammoId, ammoNeeded, cfg.level);
             return true;
         }
-        // 直接发放模式
+        // 直接发放模式：先移除旧弹药，再给新弹药（设值而非叠加）
         return giveDirectTaczAmmo(player, cfg, ammoNeeded);
     }
 
-    /** 直接发放 TACZ 弹药物品（按最大堆叠拆分） */
+    /** 直接发放 TACZ 弹药物品（先删旧弹药，再按最大堆叠拆分发放） */
     private static boolean giveDirectTaczAmmo(ServerPlayer player, AmmoConfig cfg, int ammoNeeded) {
         Item ammoItem = findItem(cfg.ammoId);
         if (ammoItem == Items.AIR) {
             LOGGER.warn("[SiegeToolsAPI] 弹药物品 [{}] 不存在", cfg.ammoId);
             return false;
         }
+        // 移除玩家身上所有该类型的弹药
+        removeItems(player, ammoItem);
+
         int maxStack = ammoItem.getDefaultInstance().getMaxStackSize();
         int remaining = ammoNeeded;
         while (remaining > 0) {
             int count = Math.min(remaining, maxStack);
-            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(ammoItem, count));
+            giveToBackpack(player, new ItemStack(ammoItem, count));
             remaining -= count;
         }
         LOGGER.info("[SiegeToolsAPI] 直接发放弹药: {} x{}", cfg.ammoId, ammoNeeded);
         return true;
     }
 
-    /** 发放非 TACZ 弹药（如雪球） */
+    /** 发放非 TACZ 弹药（如雪球）——先删旧物品，再给新物品 */
     private static boolean giveVanillaAmmo(ServerPlayer player, AmmoConfig cfg) {
         if (cfg.item == null || cfg.item.isEmpty() || cfg.count <= 0) return false;
         Item item = findItem(cfg.item);
@@ -344,11 +349,14 @@ public class SiegeToolsAPI {
             LOGGER.warn("[SiegeToolsAPI] 非 TACZ 物品 [{}] 不存在", cfg.item);
             return false;
         }
+        // 移除玩家身上所有该类型物品
+        removeItems(player, item);
+
         int maxStack = item.getDefaultInstance().getMaxStackSize();
         int remaining = cfg.count;
         while (remaining > 0) {
             int count = Math.min(remaining, maxStack);
-            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(item, count));
+            giveToBackpack(player, new ItemStack(item, count));
             remaining -= count;
         }
         LOGGER.info("[SiegeToolsAPI] 发放非 TACZ 物品: {} x{}", cfg.item, cfg.count);
@@ -413,6 +421,56 @@ public class SiegeToolsAPI {
     // ======================================================================
     //  工具方法
     // ======================================================================
+
+    /**
+     * 将物品放入背包 slot 9-35（主背包区，不含热栏），与 KubeJS giveToBackpack 一致。
+     * 如果 9-35 已满，回退到任意空位。
+     */
+    private static void giveToBackpack(ServerPlayer player, ItemStack stack) {
+        Inventory inv = player.getInventory();
+        // 优先放入 slot 9-35（主背包区）
+        for (int i = 9; i <= 35; i++) {
+            if (inv.getItem(i).isEmpty()) {
+                inv.setItem(i, stack);
+                return;
+            }
+        }
+        // 背包区已满，回退到 giveItemToPlayer（任意空位）
+        ItemHandlerHelper.giveItemToPlayer(player, stack);
+    }
+
+    /**
+     * 移除玩家身上所有匹配指定 AmmoId 的弹药盒。
+     */
+    private static void removeMatchingAmmoBoxes(ServerPlayer player, String ammoId) {
+        Item boxItem = findItem("tacz", "ammo_box");
+        if (boxItem == Items.AIR) return;
+        Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
+            if (stack.isEmpty() || stack.getItem() != boxItem) continue;
+            CustomData cd = stack.get(DataComponents.CUSTOM_DATA);
+            if (cd != null) {
+                CompoundTag tag = cd.copyTag();
+                if (ammoId.equals(tag.getString("AmmoId"))) {
+                    inv.setItem(i, ItemStack.EMPTY);
+                }
+            }
+        }
+    }
+
+    /**
+     * 移除玩家身上所有指定类型的物品。
+     */
+    private static void removeItems(ServerPlayer player, Item item) {
+        Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
+            if (!stack.isEmpty() && stack.getItem() == item) {
+                inv.setItem(i, ItemStack.EMPTY);
+            }
+        }
+    }
 
     private static Item findItem(String id) {
         return net.minecraft.core.registries.BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
