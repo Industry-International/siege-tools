@@ -233,3 +233,138 @@ LOGGER.error("错误", exception);
 3. **配置分离**: 游戏内可调节的参数应使用 `ModConfigSpec`，而非硬编码
 4. **网络安全**: C2S/S2C 网络包必须校验合法性，防止恶意客户端篡改
 5. **NBT 持久化**: 方块实体/物品的额外数据存储在 `CompoundTag` 中，读写后调用 `setChanged()`
+
+---
+
+## 8. SiegeToolsAPI 桥接架构
+
+### 8.1 架构总览
+
+`SiegeToolsAPI`（`com.xkmxz.siege_tools.api.SiegeToolsAPI`）是 Java 模组与 KubeJS 脚本之间的桥接层。KubeJS 通过 `Java.loadClass()` 调用其静态方法，将配置数据写入 Java 内存，Java 端自行处理业务逻辑。
+
+```
+┌──────────────────────────┐     Java.loadClass()     ┌──────────────────────┐
+│  KubeJS Scripts          │ ──────────────────────►   │  SiegeToolsAPI.java  │
+│  (server_scripts/)       │   clearAndRegister(json)  │                      │
+│                          │   setPlayerWeapons(...)   │  AMMO_CONFIG_MAP     │
+│  • z_ammo_kit_bridge.js  │                          │  PLAYER_WEAPONS_MAP  │
+│  • profession_gui.js     │ ◄──────────────────────   │                      │
+└──────────────────────────┘   回调/查询               │  refillPlayerAmmo()  │
+                                                       │  isPlayerSupplied()  │
+                                                       └──────────────────────┘
+```
+
+### 8.2 弹药配置表注册
+
+**KubeJS 端**（`z_ammo_kit_bridge.js`）在服务端启动时调用：
+```javascript
+var $API = Java.loadClass('com.xkmxz.siege_tools.api.SiegeToolsAPI');
+$API.clearAndRegister(JSON.stringify(ammoConfigMap));
+```
+
+`clearAndRegister` 接收 JSON 字符串，其中 `ammoConfigMap` 的结构为：
+```json
+{
+  "ak47": {
+    "type": "tacz",
+    "ammoId": "tacz:762x39",
+    "main": 210,
+    "offhand": 0,
+    "level": 2,
+    "gunId": "tacz:ak47"
+  },
+  "snowball": {
+    "type": "vanilla",
+    "item": "minecraft:snowball",
+    "count": 16
+  }
+}
+```
+
+字段说明：
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `type` | string | `"tacz"` 或 `"vanilla"` |
+| `ammoId` | string | TACZ 弹药物品 ID |
+| `main` | int | 主武器应发放的弹药量 |
+| `offhand` | int | 副武器应发放的弹药量 |
+| `level` | int | 弹药等级（>0 发弹药盒，否则发裸弹药） |
+| `gunId` | string | TACZ 枪械 ID（弹药盒标记用） |
+| `item` | string | 非 TACZ 物品 ID |
+| `count` | int | 非 TACZ 物品数量 |
+
+### 8.3 玩家武器注册（可选）
+
+KubeJS 可在玩家选择武器时调用以下方法，助 Java 获得玩家当前武器 ID，绕开 `persistentData` 跨层读取不可靠的问题：
+
+```javascript
+// 参数: (playerUUID字符串, mainWeapon, offhandWeapon, specialWeapon)
+$API.setPlayerWeapons(
+  String(player.uuid),    // 玩家 UUID
+  'ak47',                 // 主武器 ID（空串表示无）
+  'mars',                 // 副武器 ID
+  ''                      // 特殊武器 ID
+);
+```
+
+Java 端维护 `Map<UUID, PlayerWeapons>` 内存映射表。若表中查不到玩家，会降级读取 `player.getPersistentData()` 作为回退。
+
+### 8.4 弹药补给逻辑（Java 端）
+
+`SiegeToolsAPI` 提供以下补给相关方法：
+
+| 方法 | 说明 |
+|------|------|
+| `refillPlayerAmmo(player, primary, secondary, tertiary)` | 补充玩家全部武器弹药，返回是否补充了任何弹药 |
+| `isPlayerFullySupplied(player)` | 检查玩家所有武器弹药是否已满 |
+| `giveAmmoToPlayer(player, weaponId, category)` | 为玩家发放指定武器的弹药 |
+| `isAmmoFull(player, weaponId, category)` | 检查玩家指定武器弹药是否已满 |
+
+**弹药量选择规则**（`category` 参数）：
+- `"primary"` — 使用 `AmmoConfig.main`
+- `"secondary"` — 如果 `AmmoConfig.offhand > 0` 则使用 `offhand`，否则用 `main`
+- `"tertiary"` — 使用 `AmmoConfig.main`
+
+### 8.5 弹药发放方式
+
+1. **弹药盒模式**（`level > 0`）：发放 `tacz:ammo_box`，附带 `GunId`、`AmmoCount`、`AmmoLevel` 的 CustomData。
+2. **直接发放模式**（`level == 0`）：直接发放 `ammoId` 对应的弹药物品，按最大堆叠拆分。
+3. **非 TACZ 模式**（`type == "vanilla"`）：发放 `item` 对应的物品，`count` 指定数量。
+
+---
+
+## 9. 当前模块
+
+### 9.1 弹药补给包（AmmoKit）
+
+**Java 文件**：
+- `item/AmmoKitItem.java` — 物品逻辑（右键队友补给、潜行投掷放置）
+- `entity/AmmoKitEntity.java` — 弹药箱实体（落地扫描、范围补给）
+- `api/SiegeToolsAPI.java` — 桥接 API（弹药配置表、补给逻辑）
+- `client/AmmoKitRenderer.java` — 实体渲染器
+
+**交互**：
+- **右键队友**：消耗一个弹药补给包，为同队玩家补充全部弹药
+- **潜行+右键（空中）**：投掷放置一个弹药箱实体
+- **潜行+右键（弹药箱）**：拾取回背包
+
+**实体逻辑**（`AmmoKitEntity`）：
+1. 投掷后有物理模拟（重力、摩擦、弹跳）
+2. 落地后播放音效，等待 10 tick 后开始周期性扫描
+3. 每次扫描以实体为中心、`scanRange` 范围内查找同队玩家
+4. 为弹药不足的玩家发放弹药盒或直接弹药物品
+5. 所有玩家满弹药后，空闲 `idleDiscardDelay` tick 后自动消失
+6. 最大存活时间 `maxLifetime` tick（0=无限）
+
+**配置项**（`siege_tools-common.toml`）：
+```
+ammo_kit.placed.scanRange = 6          # 扫描范围（方块）
+ammo_kit.placed.scanInterval = 40       # 扫描间隔（tick）
+ammo_kit.placed.maxLifetime = 0         # 最大存活（0=无限）
+ammo_kit.placed.idleDiscardDelay = 200  # 空闲消失延迟（tick）
+ammo_kit.direct.cooldown = 25          # 右键冷却（tick）
+ammo_kit.supply.primary = true         # 是否补充主武器
+ammo_kit.supply.secondary = true       # 是否补充副武器
+ammo_kit.supply.tertiary = true        # 是否补充特殊武器
+ammo_kit.item.maxStackSize = 16        # 最大堆叠
+```
