@@ -1,7 +1,7 @@
 package com.xkmxz.siege_tools.item;
 
+import com.xkmxz.siege_tools.Config;
 import com.xkmxz.siege_tools.api.SiegeToolsAPI;
-import com.xkmxz.siege_tools.config.AmmoKitConfig;
 import com.xkmxz.siege_tools.entity.AmmoKitEntity;
 import com.xkmxz.siege_tools.siege_tools;
 import net.minecraft.ChatFormatting;
@@ -36,7 +36,7 @@ public class AmmoKitItem extends Item {
     private static final int THROW_COOLDOWN = 20;
 
     public AmmoKitItem() {
-        super(new Item.Properties().stacksTo(AmmoKitConfig.maxStackSize));
+        super(new Item.Properties().stacksTo(Config.ammoKitMaxStackSize));
     }
 
     /**
@@ -71,9 +71,9 @@ public class AmmoKitItem extends Item {
 
         // 为目标补充弹药
         boolean refilled = SiegeToolsAPI.refillPlayerAmmo(targetPlayer,
-                AmmoKitConfig.supplyPrimary,
-                AmmoKitConfig.supplySecondary,
-                AmmoKitConfig.supplyTertiary);
+                Config.ammoKitSupplyPrimary,
+                Config.ammoKitSupplySecondary,
+                Config.ammoKitSupplyTertiary);
 
         if (refilled) {
             // 播放音效
@@ -86,7 +86,7 @@ public class AmmoKitItem extends Item {
             }
 
             // 添加冷却
-            player.getCooldowns().addCooldown(this, AmmoKitConfig.directCooldown);
+            player.getCooldowns().addCooldown(this, Config.ammoKitDirectCooldown);
 
             // 提示
             if (player instanceof ServerPlayer sp) {

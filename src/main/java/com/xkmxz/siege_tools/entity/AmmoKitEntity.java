@@ -1,7 +1,7 @@
 package com.xkmxz.siege_tools.entity;
 
+import com.xkmxz.siege_tools.Config;
 import com.xkmxz.siege_tools.api.SiegeToolsAPI;
-import com.xkmxz.siege_tools.config.AmmoKitConfig;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -137,13 +137,13 @@ public class AmmoKitEntity extends Entity {
 
             // 落地后等待 10 tick 才开始扫描
             groundedTicks++;
-            if (groundedTicks >= 10 && groundedTicks % AmmoKitConfig.placedScanInterval == 0) {
+            if (groundedTicks >= 10 && groundedTicks % Config.ammoKitPlacedScanInterval == 0) {
                 scanAndSupply();
             }
         }
 
         // 检查最大存活时间
-        if (AmmoKitConfig.placedMaxLifetime > 0 && aliveTicks > AmmoKitConfig.placedMaxLifetime) {
+        if (Config.ammoKitPlacedMaxLifetime > 0 && aliveTicks > Config.ammoKitPlacedMaxLifetime) {
             this.discard();
         }
 
@@ -168,7 +168,7 @@ public class AmmoKitEntity extends Entity {
         if (!(level() instanceof ServerLevel serverLevel)) return;
 
         // 扫描范围内的玩家
-        AABB scanBox = this.getBoundingBox().inflate(AmmoKitConfig.placedScanRange);
+        AABB scanBox = this.getBoundingBox().inflate(Config.ammoKitPlacedScanRange);
         List<ServerPlayer> players = serverLevel.getEntitiesOfClass(
                 ServerPlayer.class, scanBox,
                 player -> player != null && player.isAlive() && !player.isSpectator()
@@ -196,9 +196,9 @@ public class AmmoKitEntity extends Entity {
 
             // 补充弹药
             boolean refilled = SiegeToolsAPI.refillPlayerAmmo(targetPlayer,
-                    AmmoKitConfig.supplyPrimary,
-                    AmmoKitConfig.supplySecondary,
-                    AmmoKitConfig.supplyTertiary);
+                    Config.ammoKitSupplyPrimary,
+                    Config.ammoKitSupplySecondary,
+                    Config.ammoKitSupplyTertiary);
 
             if (refilled) {
                 anyRefilled = true;
@@ -218,9 +218,9 @@ public class AmmoKitEntity extends Entity {
             idleFullTicks = 0;
         } else if (allFull) {
             // 所有玩家本来就满
-            idleFullTicks += AmmoKitConfig.placedScanInterval;
-            if (AmmoKitConfig.placedIdleDiscardDelay > 0
-                    && idleFullTicks >= AmmoKitConfig.placedIdleDiscardDelay) {
+            idleFullTicks += Config.ammoKitPlacedScanInterval;
+            if (Config.ammoKitPlacedIdleDiscardDelay > 0
+                    && idleFullTicks >= Config.ammoKitPlacedIdleDiscardDelay) {
                 // 空闲超时 → 消失
                 level().playSound(null, this.getX(), this.getY(), this.getZ(),
                         SoundEvents.SHULKER_BOX_CLOSE, SoundSource.PLAYERS, 0.6f, 1.2f);

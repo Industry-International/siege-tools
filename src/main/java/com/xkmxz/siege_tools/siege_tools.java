@@ -1,7 +1,6 @@
 package com.xkmxz.siege_tools;
 
 import com.mojang.logging.LogUtils;
-import com.xkmxz.siege_tools.config.AmmoKitConfig;
 import com.xkmxz.siege_tools.entity.AmmoKitEntity;
 import com.xkmxz.siege_tools.item.AmmoKitItem;
 import com.xkmxz.siege_tools.client.AmmoKitRenderer;
@@ -81,7 +80,6 @@ public class siege_tools {
 
         // 注册配置
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-        modContainer.registerConfig(ModConfig.Type.COMMON, AmmoKitConfig.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
