@@ -3,6 +3,7 @@ package com.xkmxz.siege_tools.api;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
+import dev.latvian.mods.kubejs.core.WithPersistentData;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -28,15 +29,17 @@ import java.util.Map;
  *    KubeJS  →  clearAndRegister(ammoConfigJson)  注册全局弹药配置表
  *
  * 2. 玩家交互时（AmmoKitItem / AmmoKitEntity）：
- *    Java    →  从 player.persistentData 直接读取武器 ID 和队伍
- *               （由 KubeJS 写入，无推送延迟问题）
+ *    Java    →  通过 KubeJS 的 WithPersistentData 接口，
+ *               直接从 KubeJS 的 persistentData 读取武器 ID 和队伍
+ *               （与 player.persistentData.xxx 是同一份数据）
  *    Java    →  查 AMMO_CONFIG_MAP 获得弹药配置 → 发放弹药
  *
  * === 设计原则 ===
  *
  * - 弹药配置表（全局）由 KubeJS 通过 JSON 注册，Java 侧只做查表。
- * - 玩家武器/队伍数据不从 Java 侧管理，直接从 player.persistentData 读取。
- *   KubeJS 写入 persistentData，Java 同步读取（消除了旧版推送机制的时序问题）。
+ * - 玩家武器/队伍数据通过 KubeJS 的 WithPersistentData API 直接读取。
+ *   KubeJS 写入 player.persistentData，Java 通过 kjs$getPersistentData() 同步读取。
+ *   注意：NeoForge 的 player.getPersistentData() 是不同的 NBT 路径，不可用。
  * - Java 只负责：查弹药配置 + 背包操作 + 弹药发放。
  * - KubeJS 只负责：维护玩家武器/队伍/职业等业务状态。
  */
@@ -115,23 +118,34 @@ public class SiegeToolsAPI {
     }
 
     // ======================================================================
-    //  玩家数据读取（从 player.persistentData，由 KubeJS 写入）
+    //  玩家数据读取（从 KubeJS 的 persistentData）
     // ======================================================================
 
     /**
-     * 从玩家的 persistentData 读取队伍名。
-     * KubeJS 在 team_selector_gui.js 中写入 player.persistentData.team。
+     * 获取 KubeJS 侧的 persistentData CompoundTag。
+     * KubeJS 通过 Mixin 将 WithPersistentData 注入 Entity，
+     * kjs$getPersistentData() 返回的 CompoundTag 与 player.persistentData.xxx 是同一份数据。
+     * 注意：NeoForge 的 player.getPersistentData() 是不同的 NBT 路径，不可用。
      */
-    public static String getPlayerTeam(ServerPlayer player) {
-        return player.getPersistentData().getString("team");
+    private static CompoundTag getKubeJSData(ServerPlayer player) {
+        if (player instanceof WithPersistentData kjsPlayer) {
+            return kjsPlayer.kjs$getPersistentData();
+        }
+        LOGGER.warn("[SiegeToolsAPI] KubeJS WithPersistentData 不可用，降级到 NeoForge persistentData");
+        return player.getPersistentData();
     }
 
     /**
-     * 从玩家的 persistentData 读取指定类别的武器 ID。
-     *
-     * @param player   目标玩家
-     * @param category 类别："primary"（mainWeapon）, "secondary"（offhandWeapon）, "tertiary"（specialWeapon）
-     * @return 武器 ID 字符串（空串表示无）
+     * 从 KubeJS persistentData 读取队伍名。
+     * 对应 KubeJS: player.persistentData.team
+     */
+    public static String getPlayerTeam(ServerPlayer player) {
+        return getKubeJSData(player).getString("team");
+    }
+
+    /**
+     * 从 KubeJS persistentData 读取指定类别的武器 ID。
+     * 对应 KubeJS: player.persistentData.mainWeapon / offhandWeapon / specialWeapon
      */
     public static String getPlayerWeaponId(ServerPlayer player, String category) {
         String key = switch (category) {
@@ -141,12 +155,37 @@ public class SiegeToolsAPI {
             default -> "";
         };
         if (key.isEmpty()) return "";
-        String raw = player.getPersistentData().getString(key);
-        // 清理可能的引号（兼容 KubeJS 某些 API 带引号存储的情况）
+        String raw = getKubeJSData(player).getString(key);
         if (raw != null) {
             raw = raw.replace("\"", "").trim();
         }
         return raw != null ? raw : "";
+    }
+
+    /**
+     * 检查玩家是否在 KubeJS persistentData 中配置了至少一把武器。
+     */
+    public static boolean hasPlayerAnyWeapon(ServerPlayer player) {
+        CompoundTag data = getKubeJSData(player);
+        String rawMain = data.getString("mainWeapon");
+        String rawOff = data.getString("offhandWeapon");
+        String rawSp = data.getString("specialWeapon");
+        String rawTeam = data.getString("team");
+        String rawProf = data.getString("profession");
+        LOGGER.info("[SiegeToolsAPI] KubeJS data dump: mainWeapon=[{}] offhandWeapon=[{}] specialWeapon=[{}] team=[{}] profession=[{}]",
+                rawMain, rawOff, rawSp, rawTeam, rawProf);
+        if (rawMain.isEmpty() && rawOff.isEmpty() && rawSp.isEmpty()) {
+            StringBuilder keys = new StringBuilder();
+            for (String k : data.getAllKeys()) {
+                keys.append(k).append(", ");
+            }
+            LOGGER.info("[SiegeToolsAPI] KubeJS data 所有键: [{}]", keys.toString());
+        }
+        boolean hasAny = !rawMain.isEmpty() || !rawOff.isEmpty() || !rawSp.isEmpty();
+        if (!hasAny) {
+            LOGGER.info("[SiegeToolsAPI] hasPlayerAnyWeapon=false (没有武器配置)");
+        }
+        return hasAny;
     }
 
     // ======================================================================
@@ -155,7 +194,7 @@ public class SiegeToolsAPI {
 
     /**
      * 补充玩家全部武器的弹药。
-     * 武器 ID 从 player.persistentData 的 mainWeapon/offhandWeapon/specialWeapon 读取。
+     * 武器 ID 从 KubeJS persistentData 的 mainWeapon/offhandWeapon/specialWeapon 读取。
      *
      * @param player   目标玩家
      * @param primary   是否补充主武器
@@ -186,12 +225,19 @@ public class SiegeToolsAPI {
 
     /**
      * 检查玩家所有武器弹药是否已满。
-     * 武器 ID 从 player.persistentData 读取。
+     * 武器 ID 从 KubeJS persistentData 的 mainWeapon/offhandWeapon/specialWeapon 读取。
+     *
+     * @return true = 弹药充足或无需补给；false = 至少有一把武器弹药不足
      */
     public static boolean isPlayerFullySupplied(ServerPlayer player) {
         String mainWeapon = getPlayerWeaponId(player, "primary");
         String offhandWeapon = getPlayerWeaponId(player, "secondary");
         String specialWeapon = getPlayerWeaponId(player, "tertiary");
+
+        // 没有配置任何武器 → 无法判断 → 视为"未补给"
+        if (mainWeapon.isEmpty() && offhandWeapon.isEmpty() && specialWeapon.isEmpty()) {
+            return false;
+        }
 
         if (!mainWeapon.isEmpty() && !isAmmoFull(player, mainWeapon, "primary")) return false;
         if (!offhandWeapon.isEmpty() && !isAmmoFull(player, offhandWeapon, "secondary")) return false;
@@ -227,7 +273,10 @@ public class SiegeToolsAPI {
      */
     public static boolean isAmmoFull(ServerPlayer player, String weaponId, String category) {
         AmmoConfig cfg = getAmmoConfig(weaponId);
-        if (cfg == null) return true;
+        if (cfg == null) {
+            LOGGER.warn("[SiegeToolsAPI] isAmmoFull: 武器 [{}] 未在配置表中，视为已满", weaponId);
+            return true;
+        }
         if ("tacz".equals(cfg.type)) return hasEnoughTaczAmmo(player, cfg, category);
         if ("vanilla".equals(cfg.type)) return hasEnoughVanillaAmmo(player, cfg);
         return true;
@@ -309,6 +358,8 @@ public class SiegeToolsAPI {
     /** 检查 TACZ 弹药是否充足（弹药盒用 GunId + AmmoCount 匹配，散装累加） */
     private static boolean hasEnoughTaczAmmo(ServerPlayer player, AmmoConfig cfg, String category) {
         int ammoNeeded = getAmmoCount(cfg, category);
+        // 没有定义弹药需求量 → 视为"不足"，让补给逻辑尝试发放
+        if (ammoNeeded <= 0) return false;
         Inventory inv = player.getInventory();
         int totalAmmo = 0;
 
@@ -344,7 +395,9 @@ public class SiegeToolsAPI {
 
     /** 检查非 TACZ 弹药是否充足 */
     private static boolean hasEnoughVanillaAmmo(ServerPlayer player, AmmoConfig cfg) {
-        if (cfg.item == null || cfg.item.isEmpty() || cfg.count <= 0) return true;
+        if (cfg.item == null || cfg.item.isEmpty()) return true;
+        // 没有定义物品数量 → 视为"不足"，让补给逻辑尝试发放
+        if (cfg.count <= 0) return false;
         Item item = findItem(cfg.item);
         int total = 0;
         Inventory inv = player.getInventory();

@@ -1,103 +1,58 @@
-# KubeJS 侧修改提示词（v2 — 新架构）
+# KubeJS 侧修改提示词（v3 — KubeJS 插件直读）
 
-## 背景
+## 新架构概述
 
-Java 模组 `siege_tools` 新增了物品 `siege_tools:ammo_kit`（弹药补给包）。
+**桥接脚本 `z_ammo_kit_bridge.js` 不再需要！** Java 侧通过 KubeJS 插件系统直接读取数据。
 
-**Java 侧已实现**：物品、实体、物理、扫描、队伍判定、弹药发放逻辑。
-**KubeJS 侧需要做**：新建一个独立文件，构建弹药配置映射表，注册到 Java 的 `SiegeToolsAPI`。
-
-> ⚠ **注意**：以下所有操作均为**新建文件**，不会修改任何已有的 KubeJS 文件。
-
----
-
-## 架构说明（v2 新架构）
+### 数据流
 
 ```
-┌───────────────────────────────────────────────────────┐
-│                   数据流（v2）                          │
-│                                                       │
-│  KubeJS 负责写 player.persistentData                  │
-│    (已有代码，无需改动)                                  │
-│    player.persistentData.team = "blue"                │
-│    player.persistentData.mainWeapon = "ak47"          │
-│    player.persistentData.offhandWeapon = "mars"       │
-│    player.persistentData.specialWeapon = "snowball"   │
-│         │                                              │
-│         ▼ (同步读取，零延迟)                              │
-│  Java 直接从 persistentData 读取                       │
-│    player.getPersistentData().getString("team")        │
-│    player.getPersistentData().getString("mainWeapon")  │
-│    → AmmoKitItem / AmmoKitEntity 使用                  │
-│                                                       │
-│  Java 持有 AmmoConfig 映射表 (仅弹药配置)               │
-│    KubeJS → clearAndRegister(json) → AMMO_CONFIG_MAP  │
-│    AmmoKitItem/AmmoKitEntity → 查表 → 发放弹药          │
-└───────────────────────────────────────────────────────┘
+KubeJS 运行 → z_tacz_config_build.js 执行
+             → 构建 ammoConfigMap（已有逻辑）
+             → 写入 global.siege_tools_ammo_configs     ← 你加这行
+                                        ↓
+Java 插件 (SiegeToolsKubeJSPlugin) 在 afterScriptsLoaded() 中
+             → 从 BuiltinKubeJSPlugin.GLOBAL 读取
+             → 调用 SiegeToolsAPI.clearAndRegister()
+             → AMMO_CONFIG_MAP 就绪
+                                        ↓
+玩家交互时:
+  Java 通过 WithPersistentData 读取 player.persistentData
+             → 获取 mainWeapon / offhandWeapon / team
+  Java 查 AMMO_CONFIG_MAP → 获得弹药配置 → 发放弹药
 ```
-
-**旧版（v1）已移除**：
-- ❌ `SiegeToolsAPI.updatePlayerSession()` — 不再需要，Java 直接读 persistentData
-- ❌ `SiegeToolsAPI.removePlayerSession()` — 同上
-- ❌ PlayerSession 类 — 不再维护玩家数据副本
 
 ---
 
 ## 你需要做的操作
 
-### 新建文件：`server_scripts/profession/z_ammo_kit_bridge.js`
+### 1. 在 `z_tacz_config_build.js` 末尾加一行
 
-在 `server_scripts/profession/` 目录下新建 `z_ammo_kit_bridge.js`，内容如下：
+找到 `profession/prof_configs/z_tacz_config_build.js`，在文件末尾（所有构建逻辑之后）添加：
 
 ```javascript
-// ============================================================
-// z_ammo_kit_bridge.js — 弹药补给包弹药配置桥接
-// 本文件为独立文件，不修改任何已有脚本
-// 加载顺序：在所有 prof_configs/*.js 之后加载（z_ 前缀 + 上级目录）
-// ============================================================
-// 功能：遍历 PROF_CONFIGS 和 VANILLA_WEAPON_AMMO，
-//       将扁平化的弹药配置映射表注册到 Java 的 SiegeToolsAPI。
-//       siege_tools:ammo_kit 物品通过此映射表查询弹药信息。
-//
-// 注：玩家武器 ID 和队伍信息由 KubeJS 现有代码写入
-//     player.persistentData，Java 侧直接读取（无需额外推送）。
-// ============================================================
-
-// 防御检查：确保 PROF_CONFIGS 已构建完成
-if (typeof PROF_CONFIGS === 'undefined') {
-    console.warn('[AmmoKitBridge] PROF_CONFIGS 未定义，跳过弹药注册');
-    return;
-}
-
+// ★ 弹药补给包：将扁平化的弹药配置写入 global，供 siege_tools 模组读取
 var ammoConfigMap = {};
-
-// ── 1. 遍历所有职业的 TACZ 枪械配置 ──
-//     从 PROF_CONFIGS[职业].guns.{类别}.{武器ID}.ammo 读取
-var PROF_TAG_LIST = PROF_TAG_LIST || [];
 for (var pi = 0; pi < PROF_TAG_LIST.length; pi++) {
     var prof = PROF_TAG_LIST[pi];
     var cfg = PROF_CONFIGS[prof];
     if (!cfg || !cfg.guns) continue;
-
     for (var cat in cfg.guns) {
         for (var wid in cfg.guns[cat]) {
             var gunCfg = cfg.guns[cat][wid];
             if (!gunCfg.ammo) continue;
-
             ammoConfigMap[wid] = {
                 type: 'tacz',
                 ammoId: gunCfg.ammo.ammoId || '',
                 main: gunCfg.ammo.main || 0,
-                offhand: gunCfg.ammo.offhand || 0,   // ★ 副武器独立备弹量（0=回退到main）
+                offhand: gunCfg.ammo.offhand || 0,
                 level: gunCfg.ammo.level || 0,
                 gunId: gunCfg.gunId || '',
             };
         }
     }
 }
-
-// ── 2. 添加非 TACZ 武器弹药 ──
-//     从 VANILLA_WEAPON_AMMO 读取（由 z_tacz_config_build.js 构建）
+// 添加非 TACZ 武器弹药（从 VANILLA_WEAPON_AMMO）
 if (typeof VANILLA_WEAPON_AMMO !== 'undefined') {
     for (var wid in VANILLA_WEAPON_AMMO) {
         var ammoCfg = VANILLA_WEAPON_AMMO[wid];
@@ -108,113 +63,44 @@ if (typeof VANILLA_WEAPON_AMMO !== 'undefined') {
         };
     }
 }
-
-// ── 3. 注册到 Java 的 SiegeToolsAPI ──
-try {
-    var $SiegeToolsAPI = Java.loadClass('com.xkmxz.siege_tools.api.SiegeToolsAPI');
-    $SiegeToolsAPI.clearAndRegister(JSON.stringify(ammoConfigMap));
-    console.log('[AmmoKitBridge] 已注册 ' + Object.keys(ammoConfigMap).length + ' 个武器的弹药配置');
-} catch (e) {
-    console.warn('[AmmoKitBridge] 注册失败（siege_tools 模组可能未安装）: ' + e);
-}
+global.siege_tools_ammo_configs = ammoConfigMap;
+// 注意：这里直接赋 JS 对象，Java 侧的 Gson 会自动解析
 ```
 
-### 关键改动说明（相比 v1）
+### 2. 删除桥接脚本
 
-| 改动点 | v1（旧） | v2（新） |
-|--------|---------|---------|
-| 玩家武器/队伍数据 | `updatePlayerSession()` 推送 | 直接读 `player.persistentData`（KubeJS 已写入） |
-| `offhand` 字段 | ❌ 未传入 | ✅ 已添加 `offhand: gunCfg.ammo.offhand \|\| 0` |
-| Java 侧 PlayerSession | ✅ 存在 | ❌ 已移除 |
+删除 `server_scripts/profession/z_ammo_kit_bridge.js`（不再需要）
 
----
+### 3. 确认 persistentData 写入
 
-## 为什么这个方案是安全的
+确保以下 KubeJS 代码正常执行（这些应该已经有了）：
 
-| 特性 | 说明 |
-|------|------|
-| ✅ **不修改任何现有文件** | 纯新建文件，零侵入 |
-| ✅ **独立的职责** | 只负责"读已有数据 + 注册到 Java"，不碰任何业务逻辑 |
-| ✅ **防御性编程** | `typeof PROF_CONFIGS === 'undefined'` 检查，确保数据就绪 |
-| ✅ **失败安全** | `try/catch` 包裹 Java 调用，模组未安装也不影响 |
-| ✅ **正确的加载顺序** | 文件在 `profession/` 目录（不是 `prof_configs/`），由于 `z_` 前缀，必然在 `prof_configs/z_tacz_config_build.js` **之后**加载，此时 `PROF_CONFIGS` 和 `VANILLA_WEAPON_AMMO` 已就绪 |
-| ✅ **reload 安全** | 使用 `clearAndRegister()`，`/kubejs reload` 后清空旧数据重新注册 |
-| ✅ **消除了推送时序问题** | 不再需要 `updatePlayerSession()`，Java 直接读 `player.persistentData`（KubeJS 已经写好了） |
-
----
-
-## 数据流
-
-```
-KubeJS 加载顺序：
-  1. profession/config/a_tacz_config.js     ← 基础工具
-  2. profession/prof_configs/b_*.js          ← 各职业配置
-  3. profession/prof_configs/z_tacz_config_build.js  ← 构建查表函数
-  4. profession/z_ammo_kit_bridge.js         ← ★ 本文件：读数据 + 注册到 Java
-  5. profession/profequip_cmd.js             ← 装备发放（不受影响）
-  ...
-
-z_ammo_kit_bridge.js 执行：
-  PROF_CONFIGS 已就绪 ──→ 遍历构建 ammoConfigMap（含 offhand）
-  VANILLA_WEAPON_AMMO 已就绪 ──→ 添加非 TACZ 弹药
-                              ↓
-  Java.loadClass('SiegeToolsAPI').clearAndRegister(JSON)
-                              ↓
-  Java 侧 Map<String, AmmoConfig> 就绪
-                              ↓
-  运行中（KubeJS 已有代码已写入 player.persistentData）：
-    player.persistentData.team = "blue"
-    player.persistentData.mainWeapon = "ak47"
-    player.persistentData.offhandWeapon = "mars"
-                              ↓
-  AmmoKitItem 右键队友 → Java 直接从 persistentData 读取武器/队伍
-  AmmoKitEntity 扫描    → Java 查 Map 获得弹药配置 → 发放弹药
-```
-
----
-
-## KubeJS 侧需要确认的点
-
-1. **确认 `player.persistentData.team` 已正确写入** — 检查 `team_selector_gui.js` 中的 `setTeamAndRun()` 是否在选队时写入。
-2. **确认 `player.persistentData.mainWeapon`/`offhandWeapon`/`specialWeapon` 已正确写入** — 检查职业 GUI 在选完武器后是否写入了这些键。
-3. **可选：在弹药职业配置中添加 `offhand` 字段** — 如果副武器需要不同的备弹量，在 `prof_configs/b_*.js` 的 `ammo` 中添加 `offhand: 数量` 字段。不添加则默认回退到 `main` 的值。
+| 数据 | 写入位置 | 来源文件 |
+|------|---------|---------|
+| `player.persistentData.team` | `team_selector_gui.js:69` | `player.persistentData.team = team` |
+| `player.persistentData.profession` | `profession_gui.js:292` | `player.persistentData.profession = prof.id` |
+| `player.persistentData.mainWeapon` | `profession_gui.js:376` | `player.persistentData.mainWeapon = wp.id` |
+| `player.persistentData.offhandWeapon` | `profession_gui.js:474` | `player.persistentData.offhandWeapon = wp.id` |
+| `player.persistentData.specialWeapon` | `profession_gui.js:573` | `player.persistentData.specialWeapon = wp.id` |
 
 ---
 
 ## 调试方法
 
-1. 启动服务器后，检查日志中是否有：
-   - `[AmmoKitBridge] 已注册 N 个武器的弹药配置`（成功）
-   - 或 `[AmmoKitBridge] PROF_CONFIGS 未定义`（加载顺序问题）
-   - 或 `[AmmoKitBridge] 注册失败`（模组未安装）
+启动后看日志：
 
-2. 检查 `player.persistentData` 是否正确：
-   - 用 KubeJS 调试命令或在脚本中 `console.log(player.persistentData)`
-
-3. 手持 `siege_tools:ammo_kit` 右键队友测试
-
-4. 潜行+右键投掷放置，等待几秒观察弹药是否补充
-
-5. 配置调整：`siege-tools-common.toml` 中的 `placed.scanRange`、`placed.scanInterval`、`supply.*` 等
-
-6. 修改本文件后执行 `/kubejs reload` 即可重新注册，无需重启
-
----
-
-## Java 侧 API 参考（SiegeToolsAPI）
-
-```java
-// 弹药配置注册（KubeJS 调用）
-SiegeToolsAPI.clearAndRegister(jsonString);
-
-// 玩家数据读取（Java 内部使用，KubeJS 无需调用）
-SiegeToolsAPI.getPlayerTeam(ServerPlayer);       // → player.persistentData.team
-SiegeToolsAPI.getPlayerWeaponId(ServerPlayer, "primary");   // → mainWeapon
-
-// 弹药发放（Java 内部使用）
-SiegeToolsAPI.refillPlayerAmmo(ServerPlayer, true, true, true);
-SiegeToolsAPI.isPlayerFullySupplied(ServerPlayer);
-SiegeToolsAPI.giveAmmoToPlayer(ServerPlayer, weaponId, "primary");
+```
+[SiegeToolsPlugin] KubeJS 服务端脚本加载完成，读取弹药配置...
+[SiegeToolsPlugin] 从 global 读取到弹药配置 JSON, 长度=XXX
+[SiegeToolsAPI] 已注册 N 个武器的弹药配置
 ```
 
-> 💡 Java 侧不再暴露 `updatePlayerSession()` / `removePlayerSession()`，KubeJS 无需调用。
+如果看到 `global.siege_tools_ammo_configs 未找到` → 检查 `z_tacz_config_build.js` 中 `global.siege_tools_ammo_configs` 是否写入了。
+
+投掷弹药箱后看：
+
+```
+[SiegeToolsAPI] KubeJS data dump: mainWeapon=[m4a1] ...
+[SiegeToolsAPI] refillPlayerAmmo: main=[m4a1] ...
+[SiegeToolsAPI] 发放弹药盒: GunId=tacz:m4a1, AmmoCount=210, AmmoLevel=2
+```
