@@ -1,0 +1,11 @@
+{
+  "itemGroup.siege_tools": "攻城工具",
+  "item.siege_tools.ammo_kit": "弹药补给包",
+  "des.siege_tools.ammo_kit": "右键队友补充弹药\n潜行+右键部署弹药箱",
+  "message.siege_tools.ammo_kit.refilled": "§a[弹药包] 弹药已补充！",
+  "message.siege_tools.ammo_kit.received_from": "§a[弹药包] 收到来自 %s 的弹药补给",
+  "message.siege_tools.ammo_kit.full": "§e[弹药包] 弹药已满，无需补充！",
+  "message.siege_tools.ammo_kit.wrong_team": "§c[弹药包] 不同队伍，无法补给！",
+  "message.siege_tools.ammo_kit.hint": "§7潜行+右键放置弹药箱，或右键队友直接补给",
+  "message.siege_tools.ammo_kit.area_refilled": "§a[弹药箱] 收到附近弹药箱的补给！"
+}

@@ -1,5 +1,11 @@
 {
-  "itemGroup.siege_tools": "Example Mod Tab",
-  "block.siege_tools.example_block": "Example Block",
-  "item.siege_tools.example_item": "Example Item"
+  "itemGroup.siege_tools": "Siege Tools",
+  "item.siege_tools.ammo_kit": "Ammo Kit",
+  "des.siege_tools.ammo_kit": "Right-click a teammate to refill ammo\nSneak + Right-click to deploy an ammo crate",
+  "message.siege_tools.ammo_kit.refilled": "§a[Ammo Kit] Ammunition refilled!",
+  "message.siege_tools.ammo_kit.received_from": "§a[Ammo Kit] Received ammunition from %s",
+  "message.siege_tools.ammo_kit.full": "§e[Ammo Kit] Ammunition is already full!",
+  "message.siege_tools.ammo_kit.wrong_team": "§c[Ammo Kit] Cannot refill: different team!",
+  "message.siege_tools.ammo_kit.hint": "§7Sneak + Right-click to deploy, or right-click a teammate to refill",
+  "message.siege_tools.ammo_kit.area_refilled": "§a[Ammo Kit] Received ammunition from nearby ammo crate!"
 }
