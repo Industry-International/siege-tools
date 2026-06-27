@@ -34,9 +34,10 @@ import java.util.List;
 public class AmmoKitItem extends Item {
 
     private static final int THROW_COOLDOWN = 20;
+    private static final int MAX_STACK = 16; // 同 MedicalKitItem，注册时 Config 尚未加载，不可用 Config.ammoKitMaxStackSize
 
     public AmmoKitItem() {
-        super(new Item.Properties().stacksTo(Config.ammoKitMaxStackSize));
+        super(new Item.Properties().stacksTo(MAX_STACK));
     }
 
     /**
