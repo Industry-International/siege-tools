@@ -104,7 +104,10 @@ dependencies {
 
     // Example mod dependency using a file as dependency
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
+    implementation files("libs/[卓越前线] superbwarfare-0.8.9-final-mc1.21.1-9b5284f4.jar")
+    implementation files("libs/kubejs-neoforge-2101.7.2-build.368.jar")
+    implementation files("libs/tacz-tweaks-3.0.0-alpha.9+1.21.1-neoforge.jar")
+    implementation files("libs/gunsmithlib-neoforge-1.21.1-tacz1.1.8-6.0.3.jar")
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
 
