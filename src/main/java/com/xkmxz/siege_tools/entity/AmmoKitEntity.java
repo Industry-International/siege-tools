@@ -43,8 +43,6 @@ public class AmmoKitEntity extends Entity {
     private int groundedTicks = 0;
     /** 是否已落地 */
     private boolean grounded = false;
-    /** 所有玩家补满后的空闲 tick 计数 */
-    private int idleFullTicks = 0;
     /** 总存活 tick */
     private int aliveTicks = 0;
     /** 所属队伍（投放者的队伍） */
@@ -170,9 +168,7 @@ public class AmmoKitEntity extends Entity {
         this.refreshDimensions();
     }
 
-    /**
-     * 扫描范围内玩家并补给弹药
-     */
+    /** 扫描范围内玩家并补给弹药 */
     private void scanAndSupply() {
         if (level().isClientSide) return;
         if (!(level() instanceof ServerLevel serverLevel)) return;
@@ -190,10 +186,6 @@ public class AmmoKitEntity extends Entity {
 
         if (players.isEmpty()) return;
 
-        // 检查每个玩家是否需要弹药
-        boolean anyRefilled = false;
-        boolean allFull = true;
-
         for (ServerPlayer targetPlayer : players) {
             // 检查同队（从 KubeJS persistentData 读取）
             // ownerTeam 为空 → 不限队伍，补给所有附近玩家
@@ -207,8 +199,7 @@ public class AmmoKitEntity extends Entity {
                 continue;
             }
 
-            // 检查弹药是否已满
-            // 先确认玩家是否有武器配置（避免误报"弹药已满"）
+            // 先确认玩家是否有武器配置
             if (!SiegeToolsAPI.hasPlayerAnyWeapon(targetPlayer)) {
                 LOGGER.info("[AmmoKitEntity] 玩家 [{}] 无武器配置, 跳过", targetPlayer.getName().getString());
                 continue;
@@ -217,8 +208,6 @@ public class AmmoKitEntity extends Entity {
                 LOGGER.info("[AmmoKitEntity] 玩家 [{}] 弹药已满, 跳过", targetPlayer.getName().getString());
                 continue;
             }
-
-            allFull = false;
 
             LOGGER.info("[AmmoKitEntity] 玩家 [{}] 弹药不足, 准备补给", targetPlayer.getName().getString());
 
@@ -229,7 +218,6 @@ public class AmmoKitEntity extends Entity {
                     Config.ammoKitSupplyTertiary);
 
             if (refilled) {
-                anyRefilled = true;
                 // 通知玩家
                 targetPlayer.sendSystemMessage(
                         Component.translatable("message.siege_tools.ammo_kit.area_refilled")
@@ -238,24 +226,6 @@ public class AmmoKitEntity extends Entity {
                 level().playSound(null, targetPlayer.getX(), targetPlayer.getY(), targetPlayer.getZ(),
                         SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.5f, 1.5f);
             }
-        }
-
-        // 如果所有玩家都已补满，累计空闲时间
-        if (allFull && anyRefilled) {
-            // 有玩家刚被补满，重置空闲计数器
-            idleFullTicks = 0;
-        } else if (allFull) {
-            // 所有玩家本来就满
-            idleFullTicks += Config.ammoKitPlacedScanInterval;
-            if (Config.ammoKitPlacedIdleDiscardDelay > 0
-                    && idleFullTicks >= Config.ammoKitPlacedIdleDiscardDelay) {
-                // 空闲超时 → 消失
-                level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                        SoundEvents.SHULKER_BOX_CLOSE, SoundSource.PLAYERS, 0.6f, 1.2f);
-                this.discard();
-            }
-        } else {
-            idleFullTicks = 0;
         }
     }
 
@@ -286,7 +256,6 @@ public class AmmoKitEntity extends Entity {
     protected void readAdditionalSaveData(CompoundTag tag) {
         if (tag.contains("GroundedTicks")) groundedTicks = tag.getInt("GroundedTicks");
         if (tag.contains("AliveTicks")) aliveTicks = tag.getInt("AliveTicks");
-        if (tag.contains("IdleFullTicks")) idleFullTicks = tag.getInt("IdleFullTicks");
         if (tag.contains("Grounded")) grounded = tag.getBoolean("Grounded");
         if (tag.contains("OwnerTeam")) ownerTeam = tag.getString("OwnerTeam");
     }
@@ -295,7 +264,6 @@ public class AmmoKitEntity extends Entity {
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putInt("GroundedTicks", groundedTicks);
         tag.putInt("AliveTicks", aliveTicks);
-        tag.putInt("IdleFullTicks", idleFullTicks);
         tag.putBoolean("Grounded", grounded);
         tag.putString("OwnerTeam", ownerTeam);
     }

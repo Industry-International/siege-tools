@@ -44,12 +44,8 @@ public class Config {
             .defineInRange("ammo_kit.placed.scanInterval", 40, 10, 200);
 
     private static final ModConfigSpec.IntValue PLACED_MAX_LIFETIME = BUILDER
-            .comment("放置后的弹药箱最大存活时间（tick，0 = 无限）")
-            .defineInRange("ammo_kit.placed.maxLifetime", 0, 0, 72000);
-
-    private static final ModConfigSpec.IntValue PLACED_IDLE_DISCARD_DELAY = BUILDER
-            .comment("放置后所有玩家弹药已满后，多少 tick 后自动消失（0 = 不自动消失）")
-            .defineInRange("ammo_kit.placed.idleDiscardDelay", 200, 0, 72000);
+            .comment("放置后的弹药箱存活时间（tick，20 tick = 1 秒）")
+            .defineInRange("ammo_kit.placed.maxLifetime", 600, 1, 72000);
 
     // 直接右键补给
     private static final ModConfigSpec.IntValue DIRECT_COOLDOWN = BUILDER
@@ -86,7 +82,6 @@ public class Config {
     public static int ammoKitPlacedScanRange;
     public static int ammoKitPlacedScanInterval;
     public static int ammoKitPlacedMaxLifetime;
-    public static int ammoKitPlacedIdleDiscardDelay;
     public static int ammoKitDirectCooldown;
     public static boolean ammoKitSupplyPrimary;
     public static boolean ammoKitSupplySecondary;
@@ -111,7 +106,6 @@ public class Config {
         ammoKitPlacedScanRange = PLACED_SCAN_RANGE.get();
         ammoKitPlacedScanInterval = PLACED_SCAN_INTERVAL.get();
         ammoKitPlacedMaxLifetime = PLACED_MAX_LIFETIME.get();
-        ammoKitPlacedIdleDiscardDelay = PLACED_IDLE_DISCARD_DELAY.get();
         ammoKitDirectCooldown = DIRECT_COOLDOWN.get();
         ammoKitSupplyPrimary = SUPPLY_PRIMARY.get();
         ammoKitSupplySecondary = SUPPLY_SECONDARY.get();
