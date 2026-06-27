@@ -110,6 +110,9 @@ dependencies {
     implementation files("libs/gunsmithlib-neoforge-1.21.1-tacz1.1.8-6.0.3.jar")
     implementation files("libs/[犀牛] rhino-2101.2.7-build.85.jar")
     implementation files("libs/kotlinforforge-5.11.0-all.jar")
+    implementation files("libs/curios-neoforge-9.5.1+1.21.1.jar")
+    implementation files("libs/geckolib-neoforge-1.21.1-4.9.1.jar")
+    implementation files("libs/ldlib2-neoforge-1.21.1-2.2.24-all.jar")
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
 
