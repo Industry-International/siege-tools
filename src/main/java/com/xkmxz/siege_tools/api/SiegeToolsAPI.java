@@ -306,12 +306,12 @@ public class SiegeToolsAPI {
             }
             ItemStack ammoStack = new ItemStack(boxItem, 1);
             CompoundTag tag = new CompoundTag();
-            tag.putString("GunId", cfg.gunId != null ? cfg.gunId : "");
+            tag.putString("AmmoId", cfg.ammoId != null ? cfg.ammoId : "");
             tag.putInt("AmmoCount", ammoNeeded);
-            tag.putInt("AmmoLevel", cfg.level);
+            tag.putInt("Level", cfg.level);
             ammoStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             ItemHandlerHelper.giveItemToPlayer(player, ammoStack);
-            LOGGER.info("[SiegeToolsAPI] 发放弹药盒: GunId={}, AmmoCount={}, AmmoLevel={}", cfg.gunId, ammoNeeded, cfg.level);
+            LOGGER.info("[SiegeToolsAPI] 发放弹药盒: AmmoId={}, AmmoCount={}, Level={}", cfg.ammoId, ammoNeeded, cfg.level);
             return true;
         }
         // 直接发放模式
@@ -364,7 +364,7 @@ public class SiegeToolsAPI {
         int totalAmmo = 0;
 
         if (cfg.level > 0) {
-            // 弹药盒模式：查找 GunId 匹配、AmmoCount 累加 >= 需要量
+            // 弹药盒模式：查找 AmmoId 匹配、AmmoCount 累加 >= 需要量
             Item boxItem = findItem("tacz", "ammo_box");
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 ItemStack stack = inv.getItem(i);
@@ -373,10 +373,10 @@ public class SiegeToolsAPI {
                     CustomData cd = stack.get(DataComponents.CUSTOM_DATA);
                     if (cd != null) {
                         CompoundTag tag = cd.copyTag();
-                        String gunId = tag.getString("GunId");
+                        String ammoId = tag.getString("AmmoId");
                         int ammoCount = tag.getInt("AmmoCount");
-                        if (gunId.equals(cfg.gunId) && ammoCount >= ammoNeeded) return true;
-                        if (gunId.equals(cfg.gunId)) totalAmmo += ammoCount;
+                        if (ammoId.equals(cfg.ammoId) && ammoCount >= ammoNeeded) return true;
+                        if (ammoId.equals(cfg.ammoId)) totalAmmo += ammoCount;
                     }
                 }
             }
