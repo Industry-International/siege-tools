@@ -15,10 +15,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * KubeJS 插件 — 在 KubeJS 脚本加载完成后，从 Rhino scope 读取 PROF_CONFIGS 和
- * VANILLA_WEAPON_AMMO，构建弹药配置映射表。
+ * KubeJS 插件 — 在 KubeJS 脚本加载完成后，从 Rhino scope 读取新 profession 模块的
+ * GUN_TACZ_FLAT 和 VANILLA_WEAPON_AMMO，构建弹药配置映射表。
  *
- * 不依赖 global.siege_tools_ammo_configs，直接读取已有的脚本全局变量。
+ * 适配最新 server_scripts/profession 数据驱动架构：
+ * - 旧变量 PROF_CONFIGS / PROF_TAG_LIST 已移除
+ * - 改用兼容层全局 GUN_TACZ_FLAT（平铺的 weaponId → 武器数据 Map）
+ * - VANILLA_WEAPON_AMMO 仍由兼容层提供
+ *
+ * GUN_TACZ_FLAT 结构：
+ *   { weaponId: { gunId, GunFireMode, GunCurrentAmmoCount,
+ *                 ammo: { ammoId, main, offhand, level },
+ *                 attachments: {...} } }
  */
 public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
 
@@ -29,80 +37,47 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
     public void afterScriptsLoaded(ScriptManager manager) {
         if (manager.scriptType != ScriptType.SERVER) return;
 
-        LOGGER.info("[SiegeToolsPlugin] KubeJS 服务端脚本加载完成，直接读取 PROF_CONFIGS...");
+        LOGGER.info("[SiegeToolsPlugin] KubeJS 服务端脚本加载完成，读取 GUN_TACZ_FLAT + VANILLA_WEAPON_AMMO ...");
 
         Context cx = manager.contextFactory.enter();
         try {
-            // 获取 Rhino 顶层的全局作用域
             Scriptable topScope = ((dev.latvian.mods.kubejs.script.KubeJSContext) cx).topLevelScope;
 
-            // 读取 PROF_CONFIGS
-            Object profConfigsObj = ScriptableObject.getProperty(topScope, "PROF_CONFIGS", cx);
-            if (!(profConfigsObj instanceof Scriptable profConfigs)) {
-                LOGGER.warn("[SiegeToolsPlugin] PROF_CONFIGS 未找到或类型错误");
-                return;
-            }
+            // ========== 读取 TACZ 武器（从平铺 Map GUN_TACZ_FLAT） ==========
+            Object gunFlatObj = ScriptableObject.getProperty(topScope, "GUN_TACZ_FLAT", cx);
 
-            // 读取 PROF_TAG_LIST
-            Object tagListObj = ScriptableObject.getProperty(topScope, "PROF_TAG_LIST", cx);
-            String[] profTags;
-            if (tagListObj instanceof Scriptable tagList) {
-                Object[] ids = tagList.getIds(cx);
-                profTags = new String[ids.length];
-                for (int i = 0; i < ids.length; i++) {
-                    if (ids[i] instanceof String s) profTags[i] = s;
-                    else if (ids[i] instanceof Number n) {
-                        Object v = ScriptableObject.getProperty(tagList, n.intValue(), cx);
-                        profTags[i] = v instanceof String s ? s : String.valueOf(v);
-                    }
-                }
-            } else {
-                LOGGER.warn("[SiegeToolsPlugin] PROF_TAG_LIST 未找到");
-                return;
-            }
-
-            // 读取 VANILLA_WEAPON_AMMO
+            // ========== 读取非 TACZ 武器弹药 ==========
             Object vanillaAmmoObj = ScriptableObject.getProperty(topScope, "VANILLA_WEAPON_AMMO", cx);
 
-            // 构建弹药配置 Map（序列化为 JSON 传给 clearAndRegister）
             Map<String, Map<String, Object>> configMap = new HashMap<>();
 
-            // 遍历所有职业
-            for (String prof : profTags) {
-                Object profObj = ScriptableObject.getProperty(profConfigs, prof, cx);
-                if (!(profObj instanceof Scriptable profCfg)) continue;
+            // 从 GUN_TACZ_FLAT 读取所有 TACZ 武器
+            if (gunFlatObj instanceof Scriptable gunFlat) {
+                for (Object widObj : gunFlat.getIds(cx)) {
+                    if (!(widObj instanceof String wid)) continue;
+                    Object gunObj = ScriptableObject.getProperty(gunFlat, wid, cx);
+                    if (!(gunObj instanceof Scriptable gunCfg)) continue;
 
-                Object gunsObj = ScriptableObject.getProperty(profCfg, "guns", cx);
-                if (!(gunsObj instanceof Scriptable guns)) continue;
+                    Object ammoObj = ScriptableObject.getProperty(gunCfg, "ammo", cx);
+                    if (!(ammoObj instanceof Scriptable ammo)) continue;
 
-                // 遍历 primary / secondary
-                for (Object catId : guns.getIds(cx)) {
-                    if (!(catId instanceof String cat)) continue;
-                    Object catObj = ScriptableObject.getProperty(guns, cat, cx);
-                    if (!(catObj instanceof Scriptable catGuns)) continue;
-
-                    for (Object widObj : catGuns.getIds(cx)) {
-                        if (!(widObj instanceof String wid)) continue;
-                        Object gunObj = ScriptableObject.getProperty(catGuns, wid, cx);
-                        if (!(gunObj instanceof Scriptable gunCfg)) continue;
-
-                        Object ammoObj = ScriptableObject.getProperty(gunCfg, "ammo", cx);
-                        if (!(ammoObj instanceof Scriptable ammo)) continue;
-
-                        Map<String, Object> entry = new HashMap<>();
-                        entry.put("type", "tacz");
-                        entry.put("ammoId", getStr(ammo, "ammoId", cx));
-                        entry.put("main", getInt(ammo, "main", 0, cx));
-                        entry.put("offhand", getInt(ammo, "offhand", 0, cx));
-                        entry.put("level", getInt(ammo, "level", 0, cx));
-                        entry.put("gunId", getStr(gunCfg, "gunId", cx));
-                        configMap.put(wid, entry);
-                    }
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("type", "tacz");
+                    entry.put("ammoId", getStr(ammo, "ammoId", cx));
+                    entry.put("main", getInt(ammo, "main", 0, cx));
+                    entry.put("offhand", getInt(ammo, "offhand", 0, cx));
+                    entry.put("level", getInt(ammo, "level", 0, cx));
+                    entry.put("gunId", getStr(gunCfg, "gunId", cx));
+                    configMap.put(wid, entry);
                 }
+                LOGGER.info("[SiegeToolsPlugin] 从 GUN_TACZ_FLAT 读取到 {} 个 TACZ 武器", configMap.size());
+            } else {
+                LOGGER.warn("[SiegeToolsPlugin] GUN_TACZ_FLAT 未找到或类型错误");
             }
 
             // 添加非 TACZ 武器弹药
             if (vanillaAmmoObj instanceof Scriptable vanillaAmmo) {
+                int vanillaCount = 0;
                 for (Object widObj : vanillaAmmo.getIds(cx)) {
                     if (!(widObj instanceof String wid)) continue;
                     Object ammoObj = ScriptableObject.getProperty(vanillaAmmo, wid, cx);
@@ -113,16 +88,18 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
                     entry.put("item", getStr(ammo, "item", cx));
                     entry.put("count", getInt(ammo, "count", 0, cx));
                     configMap.put(wid, entry);
+                    vanillaCount++;
                 }
+                LOGGER.info("[SiegeToolsPlugin] 从 VANILLA_WEAPON_AMMO 读取到 {} 个非 TACZ 武器", vanillaCount);
             }
 
             if (configMap.isEmpty()) {
-                LOGGER.warn("[SiegeToolsPlugin] 未找到任何弹药配置");
+                LOGGER.warn("[SiegeToolsPlugin] 未找到任何弹药配置（GUN_TACZ_FLAT 或 VANILLA_WEAPON_AMMO 为空）");
                 return;
             }
 
             String json = GSON.toJson(configMap);
-            LOGGER.info("[SiegeToolsPlugin] 从 PROF_CONFIGS 读取到 {} 个武器配置", configMap.size());
+            LOGGER.info("[SiegeToolsPlugin] 共注册 {} 个武器的弹药配置", configMap.size());
             SiegeToolsAPI.clearAndRegister(json);
 
         } catch (Exception e) {
