@@ -37,7 +37,7 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
     public void afterScriptsLoaded(ScriptManager manager) {
         if (manager.scriptType != ScriptType.SERVER) return;
 
-        LOGGER.info("[SiegeToolsPlugin] KubeJS 服务端脚本加载完成，读取 GUN_TACZ_FLAT + VANILLA_WEAPON_AMMO ...");
+        LOGGER.debug("[SiegeToolsPlugin] KubeJS 服务端脚本加载完成，读取 GUN_TACZ_FLAT + VANILLA_WEAPON_AMMO ...");
 
         Context cx = manager.contextFactory.enter();
         try {
@@ -70,7 +70,7 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
                     entry.put("gunId", getStr(gunCfg, "gunId", cx));
                     configMap.put(wid, entry);
                 }
-                LOGGER.info("[SiegeToolsPlugin] 从 GUN_TACZ_FLAT 读取到 {} 个 TACZ 武器", configMap.size());
+                LOGGER.debug("[SiegeToolsPlugin] 从 GUN_TACZ_FLAT 读取到 {} 个 TACZ 武器", configMap.size());
             } else {
                 LOGGER.warn("[SiegeToolsPlugin] GUN_TACZ_FLAT 未找到或类型错误");
             }
@@ -90,7 +90,7 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
                     configMap.put(wid, entry);
                     vanillaCount++;
                 }
-                LOGGER.info("[SiegeToolsPlugin] 从 VANILLA_WEAPON_AMMO 读取到 {} 个非 TACZ 武器", vanillaCount);
+                LOGGER.debug("[SiegeToolsPlugin] 从 VANILLA_WEAPON_AMMO 读取到 {} 个非 TACZ 武器", vanillaCount);
             }
 
             if (configMap.isEmpty()) {
@@ -99,7 +99,7 @@ public class SiegeToolsKubeJSPlugin implements KubeJSPlugin {
             }
 
             String json = GSON.toJson(configMap);
-            LOGGER.info("[SiegeToolsPlugin] 共注册 {} 个武器的弹药配置", configMap.size());
+            LOGGER.debug("[SiegeToolsPlugin] 共注册 {} 个武器的弹药配置", configMap.size());
             SiegeToolsAPI.clearAndRegister(json);
 
         } catch (Exception e) {

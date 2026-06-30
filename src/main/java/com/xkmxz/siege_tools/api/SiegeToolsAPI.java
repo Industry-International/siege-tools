@@ -172,18 +172,18 @@ public class SiegeToolsAPI {
         String rawSp = data.getString("specialWeapon");
         String rawTeam = data.getString("team");
         String rawProf = data.getString("profession");
-        LOGGER.info("[SiegeToolsAPI] KubeJS data dump: mainWeapon=[{}] offhandWeapon=[{}] specialWeapon=[{}] team=[{}] profession=[{}]",
+        LOGGER.debug("[SiegeToolsAPI] KubeJS data dump: mainWeapon=[{}] offhandWeapon=[{}] specialWeapon=[{}] team=[{}] profession=[{}]",
                 rawMain, rawOff, rawSp, rawTeam, rawProf);
         if (rawMain.isEmpty() && rawOff.isEmpty() && rawSp.isEmpty()) {
             StringBuilder keys = new StringBuilder();
             for (String k : data.getAllKeys()) {
                 keys.append(k).append(", ");
             }
-            LOGGER.info("[SiegeToolsAPI] KubeJS data 所有键: [{}]", keys.toString());
+            LOGGER.debug("[SiegeToolsAPI] KubeJS data 所有键: [{}]", keys.toString());
         }
         boolean hasAny = !rawMain.isEmpty() || !rawOff.isEmpty() || !rawSp.isEmpty();
         if (!hasAny) {
-            LOGGER.info("[SiegeToolsAPI] hasPlayerAnyWeapon=false (没有武器配置)");
+            LOGGER.debug("[SiegeToolsAPI] hasPlayerAnyWeapon=false (没有武器配置)");
         }
         return hasAny;
     }
@@ -207,7 +207,7 @@ public class SiegeToolsAPI {
         String offhandWeapon = secondary ? getPlayerWeaponId(player, "secondary") : "";
         String specialWeapon = tertiary ? getPlayerWeaponId(player, "tertiary") : "";
 
-        LOGGER.info("[SiegeToolsAPI] refillPlayerAmmo: main=[{}] off=[{}] sp=[{}]",
+        LOGGER.debug("[SiegeToolsAPI] refillPlayerAmmo: main=[{}] off=[{}] sp=[{}]",
                 mainWeapon, offhandWeapon, specialWeapon);
 
         boolean anyRefilled = false;
@@ -313,7 +313,7 @@ public class SiegeToolsAPI {
             tag.putInt("Level", cfg.level);
             ammoStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             giveToBackpack(player, ammoStack);
-            LOGGER.info("[SiegeToolsAPI] 发放弹药盒: AmmoId={}, AmmoCount={}, Level={}", cfg.ammoId, ammoNeeded, cfg.level);
+            LOGGER.debug("[SiegeToolsAPI] 发放弹药盒: AmmoId={}, AmmoCount={}, Level={}", cfg.ammoId, ammoNeeded, cfg.level);
             return true;
         }
         // 直接发放模式：先移除旧弹药，再给新弹药（设值而非叠加）
@@ -337,7 +337,7 @@ public class SiegeToolsAPI {
             giveToBackpack(player, new ItemStack(ammoItem, count));
             remaining -= count;
         }
-        LOGGER.info("[SiegeToolsAPI] 直接发放弹药: {} x{}", cfg.ammoId, ammoNeeded);
+        LOGGER.debug("[SiegeToolsAPI] 直接发放弹药: {} x{}", cfg.ammoId, ammoNeeded);
         return true;
     }
 
@@ -359,7 +359,7 @@ public class SiegeToolsAPI {
             giveToBackpack(player, new ItemStack(item, count));
             remaining -= count;
         }
-        LOGGER.info("[SiegeToolsAPI] 发放非 TACZ 物品: {} x{}", cfg.item, cfg.count);
+        LOGGER.debug("[SiegeToolsAPI] 发放非 TACZ 物品: {} x{}", cfg.item, cfg.count);
         return true;
     }
 

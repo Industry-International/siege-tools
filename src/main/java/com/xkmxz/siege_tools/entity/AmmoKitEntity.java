@@ -140,10 +140,10 @@ public class AmmoKitEntity extends Entity {
             // 落地后等待 10 tick 才开始扫描
             groundedTicks++;
             if (groundedTicks == 1) {
-                LOGGER.info("[AmmoKitEntity] 已落地, ownerTeam=[{}], 开始等待首次扫描(40 ticks)", ownerTeam);
+                LOGGER.debug("[AmmoKitEntity] 已落地, ownerTeam=[{}], 开始等待首次扫描(40 ticks)", ownerTeam);
             }
             if (groundedTicks == 40) {
-                LOGGER.info("[AmmoKitEntity] 首次扫描触发, groundedTicks={}, scanInterval={}", groundedTicks, Config.ammoKitPlacedScanInterval);
+                LOGGER.debug("[AmmoKitEntity] 首次扫描触发, groundedTicks={}, scanInterval={}", groundedTicks, Config.ammoKitPlacedScanInterval);
             }
             if (groundedTicks >= 10 && groundedTicks % Config.ammoKitPlacedScanInterval == 0) {
                 scanAndSupply();
@@ -173,7 +173,7 @@ public class AmmoKitEntity extends Entity {
         if (level().isClientSide) return;
         if (!(level() instanceof ServerLevel serverLevel)) return;
 
-        LOGGER.info("[AmmoKitEntity] scanAndSupply 开始, ownerTeam=[{}]", ownerTeam);
+        LOGGER.debug("[AmmoKitEntity] scanAndSupply 开始, ownerTeam=[{}]", ownerTeam);
 
         // 扫描范围内的玩家
         AABB scanBox = this.getBoundingBox().inflate(Config.ammoKitPlacedScanRange);
@@ -182,7 +182,7 @@ public class AmmoKitEntity extends Entity {
                 player -> player != null && player.isAlive() && !player.isSpectator()
         );
 
-        LOGGER.info("[AmmoKitEntity] 扫描到 {} 个玩家, 范围={}格", players.size(), Config.ammoKitPlacedScanRange);
+        LOGGER.debug("[AmmoKitEntity] 扫描到 {} 个玩家, 范围={}格", players.size(), Config.ammoKitPlacedScanRange);
 
         if (players.isEmpty()) return;
 
@@ -190,26 +190,26 @@ public class AmmoKitEntity extends Entity {
             // 检查同队（从 KubeJS persistentData 读取）
             // ownerTeam 为空 → 不限队伍，补给所有附近玩家
             String playerTeam = SiegeToolsAPI.getPlayerTeam(targetPlayer);
-            LOGGER.info("[AmmoKitEntity] 玩家 [{}] team=[{}] ownerTeam=[{}]",
+            LOGGER.debug("[AmmoKitEntity] 玩家 [{}] team=[{}] ownerTeam=[{}]",
                     targetPlayer.getName().getString(),
                     playerTeam, ownerTeam);
 
             if (!ownerTeam.isEmpty() && !ownerTeam.equals(playerTeam)) {
-                LOGGER.info("[AmmoKitEntity] 玩家 [{}] 队伍不匹配, 跳过", targetPlayer.getName().getString());
+                LOGGER.debug("[AmmoKitEntity] 玩家 [{}] 队伍不匹配, 跳过", targetPlayer.getName().getString());
                 continue;
             }
 
             // 先确认玩家是否有武器配置
             if (!SiegeToolsAPI.hasPlayerAnyWeapon(targetPlayer)) {
-                LOGGER.info("[AmmoKitEntity] 玩家 [{}] 无武器配置, 跳过", targetPlayer.getName().getString());
+                LOGGER.debug("[AmmoKitEntity] 玩家 [{}] 无武器配置, 跳过", targetPlayer.getName().getString());
                 continue;
             }
             if (SiegeToolsAPI.isPlayerFullySupplied(targetPlayer)) {
-                LOGGER.info("[AmmoKitEntity] 玩家 [{}] 弹药已满, 跳过", targetPlayer.getName().getString());
+                LOGGER.debug("[AmmoKitEntity] 玩家 [{}] 弹药已满, 跳过", targetPlayer.getName().getString());
                 continue;
             }
 
-            LOGGER.info("[AmmoKitEntity] 玩家 [{}] 弹药不足, 准备补给", targetPlayer.getName().getString());
+            LOGGER.debug("[AmmoKitEntity] 玩家 [{}] 弹药不足, 准备补给", targetPlayer.getName().getString());
 
             // 补充弹药
             boolean refilled = SiegeToolsAPI.refillPlayerAmmo(targetPlayer,
