@@ -119,7 +119,7 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
                 if (!currentTimers.containsKey(uuid)) {
                     // 首次进入范围
                     currentTimers.put(uuid, gameTime);
-                    LOGGER.debug("{} [计时] 载具 {}... 首次进入范围", LOG_PREFIX, uuid.substring(0, 8));
+                    LOGGER.info("{} [计时] 载具 {}... 首次进入范围 gameTime={}", LOG_PREFIX, uuid.substring(0, 8), gameTime);
                 } else {
                     long enterTime = currentTimers.get(uuid);
                     long elapsed = gameTime - enterTime;
@@ -245,17 +245,22 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
 
             Map<String, Integer> needToAdd = new HashMap<>();
             for (String ammoKey : vehicleNeeds.keySet()) {
-                int maxVal = slots.getOrDefault(ammoKey, 0);
+                // ammoSlots 的 key 是完整 ID，需转短名才能匹配站配 slots
+                String shortName = VehicleDataManager.getAmmoShortName(ammoKey);
+                if (shortName == null) shortName = ammoKey; // 兜底
+                int maxVal = slots.getOrDefault(shortName, 0);
                 if (maxVal <= 0) continue;
-                int current = currentCounts.getOrDefault(ammoKey, 0);
+                int current = currentCounts.getOrDefault(shortName, 0);
                 if (current >= maxVal) continue;
-                needToAdd.put(ammoKey, maxVal - current);
+                needToAdd.put(shortName, maxVal - current);
             }
 
             if (needToAdd.isEmpty()) {
-                LOGGER.debug("{} [补给] 所有弹药均已达到或超过配置最大值", LOG_PREFIX);
+                LOGGER.info("{} [补给] 无需补充（车辆已有弹药充足或站无配置）needToAdd为空", LOG_PREFIX);
                 return false;
             }
+
+            LOGGER.info("{} [补给] 需补充 {} 种弹药: {}", LOG_PREFIX, needToAdd.size(), needToAdd);
 
             // 先在现有物品组上叠加
             for (int i = 0; i < items.size(); i++) {
@@ -313,12 +318,15 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
             String inventorySnbt = inventory.toString();
             String uuid = entity.getUUID().toString();
             CommandSourceStack source = serverLevel.getServer().createCommandSourceStack()
-                    .withSuppressedOutput().withPermission(2);
+                    .withPermission(2);
 
-            serverLevel.getServer().getCommands().performPrefixedCommand(source,
-                    "data merge entity " + uuid + " {Inventory:" + inventorySnbt + "}");
+            // data merge entity
+            String dataCmd = "data merge entity " + uuid + " {Inventory:" + inventorySnbt + "}";
+            LOGGER.info("{} [补给] data merge: {}", LOG_PREFIX, dataCmd.length() > 400 ? dataCmd.substring(0, 400) + "..." : dataCmd);
+            serverLevel.getServer().getCommands().performPrefixedCommand(source, dataCmd);
 
-            // 方案B：/item replace entity 立即可见
+            // item replace entity（立即可见）
+            int okCount = 0;
             for (int si = 0; si < items.size(); si++) {
                 CompoundTag slotItem = items.getCompound(si);
                 int slotNum = slotItem.getInt("Slot");
@@ -326,7 +334,9 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
                 int count = slotItem.getInt("count");
                 serverLevel.getServer().getCommands().performPrefixedCommand(source,
                         "item replace entity " + uuid + " container." + slotNum + " " + itemId + " " + count);
+                okCount++;
             }
+            LOGGER.info("{} [补给] item replace 执行 {} 个槽位", LOG_PREFIX, okCount);
 
             LOGGER.info("{} [补给] 载具 {}... 补给完成", LOG_PREFIX, uuid.substring(0, 8));
             return true;
