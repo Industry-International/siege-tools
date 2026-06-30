@@ -26,7 +26,10 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+
+import com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -116,6 +119,31 @@ public class siege_tools {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("Siege Tools server starting");
+    }
+
+    /** 载具死亡反查部署台（替代 KubeJS EntityEvents.death） */
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event) {
+        var entity = event.getEntity();
+        if (entity.level().isClientSide()) return;
+        String type = entity.getType().builtInRegistryHolder().key().location().toString();
+        if (!type.startsWith("superbwarfare:") && !type.startsWith("mcsp:")) return;
+
+        String deadUUID = entity.getUUID().toString();
+        var server = entity.getServer();
+        if (server == null) return;
+
+        // 从全局部署映射查找部署台位置
+        var deployPos = VehicleDeployerBlockEntity.DEPLOYED_VEHICLES.remove(deadUUID);
+        if (deployPos != null) {
+            var targetLevel = server.getLevel(deployPos.dimension());
+            if (targetLevel != null && targetLevel.getBlockEntity(deployPos.pos()) instanceof VehicleDeployerBlockEntity deployer) {
+                LOGGER.info("[死亡] 载具被摧毁 @[{},{},{}] type={}",
+                        deployPos.pos().getX(), deployPos.pos().getY(), deployPos.pos().getZ(), type);
+                deployer.setDeployedUUID("");
+                deployer.setCooldownEnd(targetLevel.getGameTime() + deployer.getRespawnDelay());
+            }
+        }
     }
 
     @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)

@@ -20,13 +20,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 载具部署台 BlockEntity。
  * 替代 KubeJS block_main.js 的 ensurePD + tick + 部署生命周期。
  */
 public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvider {
+
+    /** 全局部署车辆 UUID → 部署台位置映射（用于死亡反查） */
+    public static final Map<String, DeployPos> DEPLOYED_VEHICLES = new ConcurrentHashMap<>();
+    public record DeployPos(BlockPos pos, ResourceKey<Level> dimension) {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -103,6 +112,7 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
             // 实体死亡 → 清 UUID，开始冷却
             LOGGER.info("[DeployerBE] 载具已消失 @[{},{},{}]", pos.getX(), pos.getY(), pos.getZ());
             be.deployedUUID = "";
+            DEPLOYED_VEHICLES.remove(be.deployedUUID);
             be.cooldownEnd = gameTime + be.respawnDelay;
             be.setChanged();
             return;
@@ -151,7 +161,15 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     }
 
     public String getDeployedUUID() { return deployedUUID; }
-    public void setDeployedUUID(String deployedUUID) { this.deployedUUID = deployedUUID; setChanged(); }
+    public void setDeployedUUID(String deployedUUID) {
+        var old = this.deployedUUID;
+        this.deployedUUID = deployedUUID;
+        if (old != null && !old.isEmpty()) DEPLOYED_VEHICLES.remove(old);
+        if (deployedUUID != null && !deployedUUID.isEmpty() && level != null) {
+            DEPLOYED_VEHICLES.put(deployedUUID, new DeployPos(worldPosition, level.dimension()));
+        }
+        setChanged();
+    }
 
     public long getCooldownEnd() { return cooldownEnd; }
     public void setCooldownEnd(long cooldownEnd) { this.cooldownEnd = cooldownEnd; setChanged(); }
