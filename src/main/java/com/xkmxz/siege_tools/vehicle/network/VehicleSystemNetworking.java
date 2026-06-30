@@ -34,5 +34,26 @@ public class VehicleSystemNetworking {
                 C2STriggerDeploy.STREAM_CODEC,
                 C2STriggerDeploy::handle
         );
+
+        // 切换作弊模式
+        registrar.playToServer(
+                C2SToggleCheatMode.TYPE,
+                C2SToggleCheatMode.STREAM_CODEC,
+                C2SToggleCheatMode::handle
+        );
+
+        // 载具部署台 GUI 初始化数据（S2C）
+        registrar.playToClient(
+                S2CDeployerInitData.TYPE,
+                S2CDeployerInitData.STREAM_CODEC,
+                S2CDeployerInitData::handle
+        );
+
+        // 弹药补给站 GUI 初始化数据（S2C）
+        registrar.playToClient(
+                S2CAmmoCrateInitData.TYPE,
+                S2CAmmoCrateInitData.STREAM_CODEC,
+                S2CAmmoCrateInitData::handle
+        );
     }
 }

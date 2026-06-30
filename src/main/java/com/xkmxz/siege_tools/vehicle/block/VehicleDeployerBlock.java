@@ -11,6 +11,7 @@ import com.mojang.serialization.MapCodec;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
 import com.xkmxz.siege_tools.vehicle.network.C2SSaveDeployerConfig;
 import com.xkmxz.siege_tools.vehicle.network.C2STriggerDeploy;
+import com.xkmxz.siege_tools.vehicle.network.S2CDeployerInitData;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -51,7 +52,23 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (player instanceof ServerPlayer sp) BlockUIMenuType.openUI(sp, pos);
+        if (player instanceof ServerPlayer sp) {
+            BlockUIMenuType.openUI(sp, pos);
+            // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
+            BlockEntity raw = level.getBlockEntity(pos);
+            if (raw instanceof VehicleDeployerBlockEntity be) {
+                PacketDistributor.sendToPlayer(sp, new S2CDeployerInitData(
+                        pos,
+                        be.getVehicleType(),
+                        be.getRespawnDelay(),
+                        be.isAutoRespawn(),
+                        be.isSpawnWithAmmo(),
+                        be.getOffsetX(), be.getOffsetY(), be.getOffsetZ(),
+                        be.getYaw(), be.getPitch(),
+                        be.getDeployNBTAsJson()
+                ));
+            }
+        }
         return InteractionResult.SUCCESS;
     }
 
@@ -62,24 +79,17 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         BlockEntity raw = level.getBlockEntity(pos);
         if (!(raw instanceof VehicleDeployerBlockEntity be)) return null;
 
-        String vehicleType = be.getVehicleType();
-        int respawnDelay = be.getRespawnDelay();
-        boolean autoRespawn = be.isAutoRespawn();
-        boolean spawnWithAmmo = be.isSpawnWithAmmo();
-        double ox = be.getOffsetX(), oy = be.getOffsetY(), oz = be.getOffsetZ();
-        float yaw = be.getYaw(), pitch = be.getPitch();
-        String deployNBT = be.getDeployNBTAsJson();
-
-        TextField fieldVtype = new TextField().setText(vehicleType); fieldVtype.lss("width", 180);
-        TextField fieldDelay = new TextField().setNumbersOnlyInt(20, 72000).setText(String.valueOf(respawnDelay)); fieldDelay.lss("width", 55);
-        TextField fieldAuto = new TextField().setNumbersOnlyInt(0, 1).setText(autoRespawn ? "1" : "0"); fieldAuto.lss("width", 40);
-        TextField fieldAmmo = new TextField().setNumbersOnlyInt(0, 1).setText(spawnWithAmmo ? "1" : "0"); fieldAmmo.lss("width", 40);
-        TextField fieldOx = new TextField().setNumbersOnlyInt(-999, 999).setText(String.valueOf((int)ox)); fieldOx.lss("width", 50);
-        TextField fieldOy = new TextField().setNumbersOnlyInt(-999, 999).setText(String.valueOf((int)oy)); fieldOy.lss("width", 50);
-        TextField fieldOz = new TextField().setNumbersOnlyInt(-999, 999).setText(String.valueOf((int)oz)); fieldOz.lss("width", 50);
-        TextField fieldYaw = new TextField().setNumbersOnlyInt(-180, 180).setText(String.valueOf((int)yaw)); fieldYaw.lss("width", 50);
-        TextField fieldPitch = new TextField().setNumbersOnlyInt(-90, 90).setText(String.valueOf((int)pitch)); fieldPitch.lss("width", 50);
-        TextField fieldNBT = new TextField().setText(deployNBT); fieldNBT.lss("width", 250).lss("height", 100);
+        // 注意：TextFields 初始值使用空字符串，真正数据由 S2CDeployerInitData 包推送后填充
+        TextField fieldVtype = new TextField(); fieldVtype.setId("deployer_vehicleType"); fieldVtype.lss("width", 180);
+        TextField fieldDelay = new TextField().setNumbersOnlyInt(20, 72000).setText("600"); fieldDelay.setId("deployer_respawnDelay"); fieldDelay.lss("width", 55);
+        TextField fieldAuto = new TextField().setNumbersOnlyInt(0, 1).setText("0"); fieldAuto.setId("deployer_autoRespawn"); fieldAuto.lss("width", 40);
+        TextField fieldAmmo = new TextField().setNumbersOnlyInt(0, 1).setText("1"); fieldAmmo.setId("deployer_spawnWithAmmo"); fieldAmmo.lss("width", 40);
+        TextField fieldOx = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOx.setId("deployer_offsetX"); fieldOx.lss("width", 50);
+        TextField fieldOy = new TextField().setNumbersOnlyInt(-999, 999).setText("1"); fieldOy.setId("deployer_offsetY"); fieldOy.lss("width", 50);
+        TextField fieldOz = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOz.setId("deployer_offsetZ"); fieldOz.lss("width", 50);
+        TextField fieldYaw = new TextField().setNumbersOnlyInt(-180, 180).setText("0"); fieldYaw.setId("deployer_yaw"); fieldYaw.lss("width", 50);
+        TextField fieldPitch = new TextField().setNumbersOnlyInt(-90, 90).setText("0"); fieldPitch.setId("deployer_pitch"); fieldPitch.lss("width", 50);
+        TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 250).lss("height", 100);
 
         // 类别/载具选择器
         Selector catSel = new Selector(); catSel.lss("width", "100%");

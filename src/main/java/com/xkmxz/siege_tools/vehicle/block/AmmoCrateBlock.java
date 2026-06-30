@@ -10,6 +10,8 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.mojang.serialization.MapCodec;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
 import com.xkmxz.siege_tools.vehicle.network.C2SSaveAmmoConfig;
+import com.xkmxz.siege_tools.vehicle.network.C2SToggleCheatMode;
+import com.xkmxz.siege_tools.vehicle.network.S2CAmmoCrateInitData;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -48,7 +50,20 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (player instanceof ServerPlayer sp) BlockUIMenuType.openUI(sp, pos);
+        if (player instanceof ServerPlayer sp) {
+            BlockUIMenuType.openUI(sp, pos);
+            // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
+            BlockEntity raw = level.getBlockEntity(pos);
+            if (raw instanceof AmmoCrateBlockEntity be) {
+                PacketDistributor.sendToPlayer(sp, new S2CAmmoCrateInitData(
+                        pos,
+                        be.getScanRange(),
+                        be.getCooldownSec(),
+                        be.getEnterDelay(),
+                        new HashMap<>(be.getSlots())
+                ));
+            }
+        }
         return InteractionResult.SUCCESS;
     }
 
@@ -68,17 +83,15 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
             }
         }
 
-        // 先读取一次 BE 获取当前值
-        BlockEntity raw = level.getBlockEntity(pos);
-        if (!(raw instanceof AmmoCrateBlockEntity be)) return null;
-
-        TextField fieldScan = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(be.getScanRange())); fieldScan.lss("width", 55);
-        TextField fieldCool = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(be.getCooldownSec())); fieldCool.lss("width", 55);
-        TextField fieldEnter = new TextField().setNumbersOnlyInt(1, 999999).setText(String.valueOf(be.getEnterDelay())); fieldEnter.lss("width", 55);
+        // 注意：TextFields 初始值使用空字符串，真正数据由 S2CAmmoCrateInitData 包推送后填充
+        TextField fieldScan = new TextField().setNumbersOnlyInt(0, 999999).setText("12"); fieldScan.setId("ammo_scanRange"); fieldScan.lss("width", 55);
+        TextField fieldCool = new TextField().setNumbersOnlyInt(0, 999999).setText("5"); fieldCool.setId("ammo_cooldown"); fieldCool.lss("width", 55);
+        TextField fieldEnter = new TextField().setNumbersOnlyInt(1, 999999).setText("3"); fieldEnter.setId("ammo_enterDelay"); fieldEnter.lss("width", 55);
 
         Map<String, TextField> slotFields = new LinkedHashMap<>();
         for (String sn : ammoShortNames) {
-            TextField f = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(be.getSlots().getOrDefault(sn, 0)));
+            TextField f = new TextField().setNumbersOnlyInt(0, 999999).setText("0");
+            f.setId("ammo_slot_" + sn);
             f.lss("width", 55);
             slotFields.put(sn, f);
         }
@@ -119,10 +132,9 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         if (holder.player.hasPermissions(2)) {
             addGap(cp);
             Button btnT = new Button().setText(Component.literal("§6⇄ 切换作弊模式")); btnT.lss("padding", "3 10");
-            btnT.setOnServerClick(e -> {
-                BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
-                if (r instanceof AmmoCrateBlockEntity b) { b.setCheatMode(!b.isCheatMode()); b.setChanged(); }
-                holder.player.displayClientMessage(Component.literal("§6[弹药补给站] 作弊模式已切换"), false); });
+            btnT.setOnClick(e -> {
+                PacketDistributor.sendToServer(new C2SToggleCheatMode(holder.pos));
+            });
             cp.addChild(btnT);
         } else { addGap(cp); cp.addChild(new Label().setText(Component.literal("§c你没有权限使用作弊功能"))); }
         tv.addTab(new Tab().setText("§c作弊"), cp);
@@ -150,9 +162,13 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         btnRow.addChild(btnSave);
 
         Button btnReset = new Button().setText(Component.literal("§e↻ 重置默认")); btnReset.lss("padding", "3 10");
-        btnReset.setOnServerClick(e -> {
-            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
-            if (r instanceof AmmoCrateBlockEntity b) { b.resetConfig(); holder.player.displayClientMessage(Component.literal("§a✔ 已重置为默认配置"), false); }
+        btnReset.setOnClick(e -> {
+            // 发一个默认值配置包到服务端实现重置
+            PacketDistributor.sendToServer(new C2SSaveAmmoConfig(
+                    holder.pos,
+                    12, 5, 3,
+                    new HashMap<>()
+            ));
         });
         btnRow.addChild(btnReset);
         root.addChild(btnRow);
