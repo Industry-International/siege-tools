@@ -2,6 +2,7 @@ package com.xkmxz.siege_tools.vehicle.network;
 
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Selector;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
 import com.xkmxz.siege_tools.siege_tools;
 import net.minecraft.core.BlockPos;
@@ -55,9 +56,14 @@ public record S2CVehiclePacket(
 
     // ========== 工厂方法 ==========
 
-    /** 初始化载具部署台 GUI */
+    /** 初始化载具部署台 GUI（从预先构建的 CompoundTag，含 category） */
+    public static S2CVehiclePacket initDeployer(BlockPos pos, CompoundTag data) {
+        return new S2CVehiclePacket(pos, "init_deployer", data);
+    }
+
+    /** 初始化载具部署台 GUI（从 DeployerConfigData） */
     public static S2CVehiclePacket initDeployer(BlockPos pos, DeployerConfigData cfg) {
-        return new S2CVehiclePacket(pos, "init_deployer", cfg.toTag());
+        return initDeployer(pos, cfg.toTag());
     }
 
     /** 初始化弹药补给站 GUI */
@@ -94,6 +100,20 @@ public record S2CVehiclePacket(
         setText(ui, "deployer_pitch", String.valueOf((int) d.pitch()));
         String nbtJson = com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity.nbtCompoundToJson(d.deployNBT());
         setText(ui, "deployer_deployNBT", nbtJson);
+
+        // 恢复下拉菜单位置
+        if (pkt.data.contains("category")) {
+            String cat = pkt.data.getString("category");
+            var catSel = ui.getElementById("deployer_category");
+            if (catSel instanceof Selector s) {
+                s.setSelected(cat);
+            }
+            // 触发分类变更后，再设置载具选择器
+            var vehSel = ui.getElementById("deployer_vehicle");
+            if (vehSel instanceof Selector s) {
+                s.setSelected(d.vehicleType());
+            }
+        }
     }
 
     private static void handleInitAmmo(S2CVehiclePacket pkt, ModularUI ui) {

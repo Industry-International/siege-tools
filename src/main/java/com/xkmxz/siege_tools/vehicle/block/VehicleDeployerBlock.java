@@ -55,21 +55,33 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player instanceof ServerPlayer sp) {
             BlockUIMenuType.openUI(sp, pos);
-            // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
+            // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI
             BlockEntity raw = level.getBlockEntity(pos);
             if (raw instanceof VehicleDeployerBlockEntity be) {
-                PacketDistributor.sendToPlayer(sp, S2CVehiclePacket.initDeployer(
-                        pos,
-                        new DeployerConfigData(
-                                be.getVehicleType(),
-                                be.getRespawnDelay(),
-                                be.isAutoRespawn(),
-                                be.isSpawnWithAmmo(),
-                                be.getOffsetX(), be.getOffsetY(), be.getOffsetZ(),
-                                be.getYaw(), be.getPitch(),
-                                be.getDeployNBT()
-                        )
-                ));
+                DeployerConfigData cfg = new DeployerConfigData(
+                        be.getVehicleType(),
+                        be.getRespawnDelay(),
+                        be.isAutoRespawn(),
+                        be.isSpawnWithAmmo(),
+                        be.getOffsetX(), be.getOffsetY(), be.getOffsetZ(),
+                        be.getYaw(), be.getPitch(),
+                        be.getDeployNBT()
+                );
+                // 查找该载具所属分类（用于 GUI 下拉菜单位置恢复）
+                CompoundTag initData = cfg.toTag();
+                if (be.getVehicleType() != null && !be.getVehicleType().isEmpty()) {
+                    var db = VehicleDataManager.getDatabase();
+                    if (db.isLoaded()) {
+                        for (var entry : db.getByCategory().entrySet()) {
+                            if (entry.getValue().contains(be.getVehicleType())) {
+                                var ci = db.getCategories().get(entry.getKey());
+                                if (ci != null) initData.putString("category", ci.displayName());
+                                break;
+                            }
+                        }
+                    }
+                }
+                PacketDistributor.sendToPlayer(sp, S2CVehiclePacket.initDeployer(pos, initData));
             }
         }
         return InteractionResult.SUCCESS;
@@ -95,8 +107,8 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 250).lss("height", 100);
 
         // 类别/载具选择器
-        Selector catSel = new Selector(); catSel.lss("width", "100%");
-        Selector vehSel = new Selector(); vehSel.lss("width", "100%");
+        Selector catSel = new Selector(); catSel.setId("deployer_category"); catSel.lss("width", "100%");
+        Selector vehSel = new Selector(); vehSel.setId("deployer_vehicle"); vehSel.lss("width", "100%");
 
         var db = VehicleDataManager.getDatabase();
         var catData = new LinkedHashMap<String, List<String>>();
