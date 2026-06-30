@@ -134,8 +134,8 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         }
 
         // 紧凑布局
-        UIElement root = new UIElement(); root.lss("width", 250).lss("padding", 5);
-        var title = new Label().setText(Component.literal("§6╔══ 弹药补给站配置 ══╗"));
+        UIElement root = new UIElement(); root.lss("width", 190).lss("padding", 2);
+        var title = new Label().setText(Component.literal("§6╔ 弹药补给站 ╗"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
         root.addChild(title);
@@ -144,18 +144,17 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         TabView tv = new TabView();
 
         // Tab 1: 基础
-        UIElement p1 = new UIElement(); p1.lss("padding", 3);
+        UIElement p1 = new UIElement(); p1.lss("padding", 2);
         addRow(p1, "§7扫描范围:", fieldScan, " §7格");
-        addGap(p1); addRow(p1, "§7冷却时间:", fieldCool, " §7秒");
-        addGap(p1); addRow(p1, "§7驶入等待:", fieldEnter, " §7秒");
-        addGap(p1);
+        addRow(p1, "§7冷却时间:", fieldCool, " §7秒");
+        addRow(p1, "§7驶入等待:", fieldEnter, " §7秒");
         p1.addChild(new Label().setText(Component.literal("§8← 切换标签页配置弹药")));
         tv.addTab(new Tab().setText("基础"), p1);
 
         // 弹药分类页签（按 AMMO_CATEGORIES 分组）
         for (var ac : AMMO_CATEGORIES) {
-            UIElement page = new UIElement(); page.lss("padding", 3);
-            page.addChild(new Label().setText(Component.literal("§e── " + ac.sectionTitle + " ──")));
+            UIElement page = new UIElement(); page.lss("padding", 2);
+            page.addChild(new Label().setText(Component.literal("§e" + ac.sectionTitle)));
             for (var key : ac.keys) {
                 if (ammoDisplayMap.containsKey(key)) {
                     addRow(page, ammoDisplayMap.get(key) + ":", slotFields.get(key), " 个");
@@ -165,7 +164,7 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         }
 
         // 作弊页
-        UIElement cp = new UIElement(); cp.lss("padding", 3);
+        UIElement cp = new UIElement(); cp.lss("padding", 2);
         cp.addChild(new Label().setText(Component.literal("§c── 作弊功能 ──")));
         if (holder.player.hasPermissions(2)) {
             addGap(cp);

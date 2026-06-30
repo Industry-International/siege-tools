@@ -147,8 +147,8 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         });
         vehSel.setOnValueChanged(newVid -> { if (newVid != null) fieldVtype.setText(newVid.toString()); });
 
-        UIElement root = new UIElement(); root.lss("width", 280).lss("padding", 6);
-        var title = new Label().setText(Component.literal("§6╔══ 载具部署台配置 ══╗"));
+        UIElement root = new UIElement(); root.lss("width", 200).lss("padding", 2);
+        var title = new Label().setText(Component.literal("§6╔ 载具部署台 ╗"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
         root.addChild(title);
@@ -157,48 +157,41 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         TabView tv = new TabView();
 
         // Tab 1: 载具选择
-        UIElement p1 = new UIElement(); p1.lss("padding", 4);
-        p1.addChild(new Label().setText(Component.literal("§e── 选择载具 ──")));
+        UIElement p1 = new UIElement(); p1.lss("padding", 2);
         addRow(p1, "§7类别:", catSel, "");
-        addGap(p1); addRow(p1, "§7载具:", vehSel, "");
-        addGap(p1); addRow(p1, "§7ID:", fieldVtype, "");
+        addRow(p1, "§7载具:", vehSel, "");
+        addRow(p1, "§7ID:", fieldVtype, "");
         p1.addChild(new Label().setText(Component.literal("§8从下拉选择或直接输入完整 ID")));
         tv.addTab(new Tab().setText("载具"), p1);
 
         // Tab 2: 基础设置
-        UIElement p2 = new UIElement(); p2.lss("padding", 4);
-        p2.addChild(new Label().setText(Component.literal("§e── 部署基础参数 ──")));
+        UIElement p2 = new UIElement(); p2.lss("padding", 2);
         addRow(p2, "§7重生延迟:", fieldDelay, " §7tick");
-        p2.addChild(new Label().setText(Component.literal("§8(20 tick = 1 秒, 默认 600 = 30s)")));
-        addGap(p2); addRow(p2, "§7自动重生:", fieldAuto, " §7(1=开启)");
-        addGap(p2); addRow(p2, "§7生成带弹药:", fieldAmmo, " §7(1=是)");
+        p2.addChild(new Label().setText(Component.literal("§8(20t=1s 默认600=30s)")));
+        addRow(p2, "§7自动重生:", fieldAuto, " §7(1=开)");
+        addRow(p2, "§7带弹药:", fieldAmmo, " §7(1=是)");
         tv.addTab(new Tab().setText("基础"), p2);
 
         // Tab 3: 坐标偏移
-        UIElement p3 = new UIElement(); p3.lss("padding", 4);
-        p3.addChild(new Label().setText(Component.literal("§e── 部署坐标偏移 ──")));
+        UIElement p3 = new UIElement(); p3.lss("padding", 2);
         addRow(p3, "§7X偏移:", fieldOx, " 格"); addRow(p3, "§7Y偏移:", fieldOy, " 格"); addRow(p3, "§7Z偏移:", fieldOz, " 格");
-        addGap(p3); addRow(p3, "§7朝向(yaw):", fieldYaw, " °"); addRow(p3, "§7俯仰(pitch):", fieldPitch, " °");
+        addRow(p3, "§7朝向:", fieldYaw, " °"); addRow(p3, "§7俯仰:", fieldPitch, " °");
         tv.addTab(new Tab().setText("坐标"), p3);
 
-        // Tab 4: ⚙NBT简单 — 参数化配置
-        UIElement p4 = new UIElement(); p4.lss("padding", 4);
-        p4.addChild(new Label().setText(Component.literal("§e── NBT 参数配置 ──")));
-        p4.addChild(new Label().setText(Component.literal("§7修改部署时的核心属性，留空则使用数据库默认值")));
-        addGap(p4);
-        addRow(p4, "§eEnergy  §7能量:", fieldNbtEnergy, "");
-        p4.addChild(new Label().setText(Component.literal("  §8载具总能量，影响武器可用性（0=没电）")));
-        addRow(p4, "§eHealth  §7生命值:", fieldNbtHealth, "");
-        p4.addChild(new Label().setText(Component.literal("  §8载具总生命值，归零则摧毁")));
-        addRow(p4, "§eInvulnerable  §7无敌:", fieldNbtInvul, "  §8(1=是, 0=否)");
-        addRow(p4, "§eDecoyReady  §7诱饵弹:", fieldNbtDecoy, "  §8(1=就绪, 0=未装填)");
-        addGap(p4);
-        // 应用数据库默认值按钮（客户端操作：从已有 init 数据提取对应字段填入）
+        // Tab 4: ⚙NBT简单
+        UIElement p4 = new UIElement(); p4.lss("padding", 2);
+        p4.addChild(new Label().setText(Component.literal("§7修改核心属性，留空用默认值")));
+        addRow(p4, "§eEnergy:", fieldNbtEnergy, "");
+        addRow(p4, "§eHealth:", fieldNbtHealth, "");
+        addRow(p4, "§eEnergy:", fieldNbtEnergy, "");
+        addRow(p4, "§eHealth:", fieldNbtHealth, "");
+        addRow(p4, "§eInvulnerable:", fieldNbtInvul, "");
+        addRow(p4, "§eDecoyReady:", fieldNbtDecoy, "");
+        // 应用数据库默认值按钮
         Button btnApplyDefaults = new Button();
-        btnApplyDefaults.setText(Component.literal("§b⟳ 应用数据库默认值"));
-        btnApplyDefaults.lss("padding", "3 8");
+        btnApplyDefaults.setText(Component.literal("§b⟳ 应用默认值"));
+        btnApplyDefaults.lss("padding", "2 6");
         btnApplyDefaults.setOnClick(e -> {
-            // 从 deployer_deployNBT 提取默认值
             String nbtJson = fieldNBT.getText();
             if (nbtJson.isEmpty() || "{}".equals(nbtJson)) return;
             try {
@@ -212,18 +205,13 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             } catch (Exception ignored) {}
         });
         p4.addChild(btnApplyDefaults);
-        tv.addTab(new Tab().setText("⚙NBT简单"), p4);
+        tv.addTab(new Tab().setText("⚙NBT"), p4);
 
-        // Tab 5: ⚡NBT高级 — 原始 JSON
-        UIElement p5 = new UIElement(); p5.lss("padding", 4);
-        p5.addChild(new Label().setText(Component.literal("§e── deployNBT 原始 JSON ──")));
-        p5.addChild(new Label().setText(Component.literal("§7完全自定义的部署 NBT 模板")));
-        addGap(p5);
-        p5.addChild(new Label().setText(Component.literal("§8留空 {} 则使用数据库完整默认值。")));
-        p5.addChild(new Label().setText(Component.literal("§8填写部分字段则会与数据库模板合并。")));
-        addGap(p5);
+        // Tab 5: ⚡NBT高级
+        UIElement p5 = new UIElement(); p5.lss("padding", 2);
+        p5.addChild(new Label().setText(Component.literal("§7自定义 deployNBT JSON，留空 {} 用默认值")));
         p5.addChild(fieldNBT);
-        tv.addTab(new Tab().setText("⚡NBT高级"), p5);
+        tv.addTab(new Tab().setText("⚡NBT上"), p5);
 
         root.addChild(tv);
         root.addChild(sep());
@@ -280,7 +268,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         return ModularUI.of(UI.of(root), holder.player);
     }
 
-    private static Label sep() { Label s = new Label(); s.setText(Component.literal("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
+    private static Label sep() { Label s = new Label(); s.setText(Component.literal("§8————————————")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
     private static void addRow(UIElement p, String label, UIElement f, String u) { UIElement r = new UIElement(); r.addChild(new Label().setText(Component.literal(label))); r.addChild(f); r.addChild(new Label().setText(Component.literal(u))); p.addChild(r); }
     private static void addGap(UIElement p) { p.addChild(new Label().setText(Component.literal(" "))); }
     private static int sInt(String s, int d) { try { return Integer.parseInt(s); } catch (Exception e) { return d; } }
