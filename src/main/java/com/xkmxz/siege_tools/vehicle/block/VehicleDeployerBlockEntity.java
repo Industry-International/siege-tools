@@ -159,11 +159,54 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     public CompoundTag getDeployNBT() { return deployNBT; }
     public void setDeployNBT(CompoundTag deployNBT) { this.deployNBT = deployNBT != null ? deployNBT : new CompoundTag(); setChanged(); }
 
-    /** 将 deployNBT 转为 JSON 字符串，供 GUI 文本框展示 */
+    /** 将 deployNBT 转为标准 JSON 字符串，供 GUI 文本框展示 */
     public String getDeployNBTAsJson() {
         if (deployNBT == null || deployNBT.isEmpty()) return "{}";
-        // CompoundTag → SNBT 格式文本（与 JSON 兼容，便于编辑）
-        return deployNBT.toString();
+        return nbtCompoundToJson(deployNBT);
+    }
+
+    /** 递归：CompoundTag → 标准 JSON 对象字符串 */
+    private static String nbtCompoundToJson(CompoundTag tag) {
+        StringBuilder sb = new StringBuilder("{");
+        boolean first = true;
+        for (String key : tag.getAllKeys()) {
+            if (!first) sb.append(",");
+            first = false;
+            sb.append("\"").append(jsonEscape(key)).append("\":");
+            sb.append(nbtTagToJson(tag.get(key)));
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /** 递归：任意 NBT Tag → JSON 值字符串 */
+    private static String nbtTagToJson(Tag t) {
+        if (t instanceof CompoundTag ct) return nbtCompoundToJson(ct);
+        if (t instanceof net.minecraft.nbt.ListTag lt) {
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < lt.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append(nbtTagToJson(lt.get(i)));
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+        if (t instanceof net.minecraft.nbt.StringTag st) {
+            return "\"" + jsonEscape(st.getAsString()) + "\"";
+        }
+        if (t instanceof net.minecraft.nbt.NumericTag nt) {
+            return nt.getAsString(); // 数字直接输出
+        }
+        return "\"\"";
+    }
+
+    /** 转义 JSON 字符串中的特殊字符 */
+    private static String jsonEscape(String s) {
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     public boolean isSpawnWithAmmo() { return spawnWithAmmo; }
