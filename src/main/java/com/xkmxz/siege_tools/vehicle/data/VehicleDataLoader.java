@@ -119,7 +119,7 @@ public class VehicleDataLoader {
                     getDouble(json, "mass"), getDouble(json, "upStep"),
                     getInt(json, "seatCount"), getString(json, "containerType"),
                     getString(json, "engineType"),
-                    json.has("hasDecoy") ? json.get("hasDecoy").getAsBoolean() : null
+                    getBool(json, "hasDecoy")
             );
 
             // parts
@@ -279,16 +279,33 @@ public class VehicleDataLoader {
 
     @Nullable
     private static Integer getInt(JsonObject obj, String key) {
-        return obj.has(key) ? obj.get(key).getAsInt() : null;
+        if (obj.has(key) && !obj.get(key).isJsonNull()) {
+            try { return obj.get(key).getAsInt(); } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     @Nullable
     private static Double getDouble(JsonObject obj, String key) {
-        return obj.has(key) ? obj.get(key).getAsDouble() : null;
+        if (obj.has(key) && !obj.get(key).isJsonNull()) {
+            try { return obj.get(key).getAsDouble(); } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     @Nullable
     private static String getString(JsonObject obj, String key) {
-        return obj.has(key) ? obj.get(key).getAsString() : null;
+        if (obj.has(key) && !obj.get(key).isJsonNull()) {
+            try { return obj.get(key).getAsString(); } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Boolean getBool(JsonObject obj, String key) {
+        if (obj.has(key) && !obj.get(key).isJsonNull()) {
+            try { return obj.get(key).getAsBoolean(); } catch (Exception ignored) {}
+        }
+        return null;
     }
 }
