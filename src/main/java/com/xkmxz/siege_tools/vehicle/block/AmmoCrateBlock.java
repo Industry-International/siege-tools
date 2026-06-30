@@ -124,16 +124,21 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         basicPage.addChild(label(tl("gui.siege_tools.ammo.label.enter_delay")));
         basicPage.addChild(fieldEnter);
 
-        // 弹药分类页面
+        // 弹药分类页面（2列网格布局）
         var catPages = new LinkedHashMap<String, UIElement>();
         for (var cd : categories) {
             UIElement page = new UIElement(); page.lss("padding", 2);
             page.addChild(label(Component.literal("§e" + cd.name())));
-            for (String key : cd.keys()) {
+            List<String> keys = cd.keys();
+            // 每行2个弹药项
+            for (int i = 0; i < keys.size(); i += 2) {
                 UIElement row = new UIElement();
-                row.addChild(label(Component.literal(ammoDisplayMap.getOrDefault(key, "§f" + key) + ":")));
-                row.addChild(slotFields.get(key));
-                row.addChild(label(tl("gui.siege_tools.ammo.unit.count")));
+                // 左列
+                addAmmoField(row, keys.get(i), ammoDisplayMap, slotFields);
+                // 右列（如果有）
+                if (i + 1 < keys.size()) {
+                    addAmmoField(row, keys.get(i + 1), ammoDisplayMap, slotFields);
+                }
                 page.addChild(row);
             }
             catPages.put(cd.name(), page);
@@ -243,5 +248,13 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
     private static Label label(Component text) { Label r = new Label(); r.setText(text); return r; }
     private static Label gap() { Label r = new Label(); r.setText(Component.literal(" ")); return r; }
     private static Label sep() { Label s = new Label(); s.setText(tl("gui.siege_tools.deployer.separator")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
+
+    /** 添加一行弹药编辑字段（标签+输入框+单位） */
+    private static void addAmmoField(UIElement row, String key, Map<String, String> displayMap, Map<String, TextField> fields) {
+        row.addChild(label(Component.literal(displayMap.getOrDefault(key, "§f" + key) + ":")));
+        TextField tf = fields.get(key);
+        if (tf != null) row.addChild(tf);
+        row.addChild(label(Component.literal(" ")));
+    }
     private static int sInt(String s, int d) { try { return Math.max(0, Integer.parseInt(s)); } catch (Exception e) { return d; } }
 }
