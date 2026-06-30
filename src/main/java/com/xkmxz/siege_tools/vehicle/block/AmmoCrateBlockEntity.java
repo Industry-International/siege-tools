@@ -1,6 +1,7 @@
 package com.xkmxz.siege_tools.vehicle.block;
 
 import com.mojang.logging.LogUtils;
+import com.xkmxz.siege_tools.vehicle.data.VehicleData;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -105,6 +106,9 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
             // 计时数据：（保留旧计时器，用于检测离开的车辆）
             Map<String, Long> currentTimers = new HashMap<>(vehicleTimers);
 
+            // 进度信息（用于给乘客发动作栏）
+            var vehicleProgress = new LinkedHashMap<UUID, Float>(); // entityUUID → progress 0~1
+
             for (Entity entity : entities) {
                 String uuid = entity.getUUID().toString();
                 String typeStr = entity.getType().builtInRegistryHolder().key().location().toString();
@@ -128,6 +132,10 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
 
                     LOGGER.debug("{} [计时] 载具 {}... 已在范围内 {}/{} ticks",
                             LOG_PREFIX, uuid.substring(0, 8), elapsed, enterDelayTicks);
+
+                    // 推送进度给乘客（动作栏）
+                    float progress = Math.min(1.0f, (float) elapsed / enterDelayTicks);
+                    vehicleProgress.put(entity.getUUID(), progress);
 
                     if (elapsed >= enterDelayTicks) {
                         // 停留时间达标 → 补给
@@ -157,6 +165,23 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
                 cooldownEnd = gameTime + cooldownTicks;
                 setChanged();
                 LOGGER.info("{} [冷却] 设置冷却至 gameTime={} ({}s后)", LOG_PREFIX, cooldownEnd, cooldownSec);
+            }
+
+            // 推送补给进度到乘客动作栏
+            if (!vehicleProgress.isEmpty()) {
+                for (Entity entity : entities) {
+                    Float prog = vehicleProgress.get(entity.getUUID());
+                    if (prog == null) continue;
+                    String bar = buildProgressBar(prog);
+                    for (Entity passenger : entity.getPassengers()) {
+                        if (passenger instanceof net.minecraft.world.entity.player.Player player) {
+                            player.displayClientMessage(
+                                    Component.literal(bar),
+                                    true // action bar
+                            );
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             LOGGER.error("{} 执行补给出错: {}", LOG_PREFIX, e.getMessage());
@@ -205,11 +230,23 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
                 currentCounts.put(ammoKey, currentCounts.getOrDefault(ammoKey, 0) + count);
             }
 
-            // 计算需要补充的量
+            // 根据载具 JSON 的 defaultAmmo 判断需要什么弹药，按需补充
+            String entityType = entity.getType().builtInRegistryHolder().key().location().toString();
+            VehicleData vd = VehicleDataManager.getVehicle(entityType);
+            Map<String, Integer> vehicleNeeds;
+            if (vd != null && vd.defaultAmmo() != null && !vd.defaultAmmo().isEmpty()) {
+                vehicleNeeds = vd.defaultAmmo();
+                LOGGER.debug("{} [补给] 数据库命中 {} 定义了 {} 种弹药", LOG_PREFIX, entityType, vehicleNeeds.size());
+            } else {
+                // 数据库未命中或 defaultAmmo 为空 → 使用全部站配弹药（同 KubeJS 兜底）
+                vehicleNeeds = slots;
+                LOGGER.debug("{} [补给] {} 无 defaultAmmo，使用全部 {} 种站配弹药", LOG_PREFIX, entityType, slots.size());
+            }
+
             Map<String, Integer> needToAdd = new HashMap<>();
-            for (Map.Entry<String, Integer> slotEntry : slots.entrySet()) {
-                String ammoKey = slotEntry.getKey();
-                int maxVal = slotEntry.getValue();
+            for (String ammoKey : vehicleNeeds.keySet()) {
+                int maxVal = slots.getOrDefault(ammoKey, 0);
+                if (maxVal <= 0) continue;
                 int current = currentCounts.getOrDefault(ammoKey, 0);
                 if (current >= maxVal) continue;
                 needToAdd.put(ammoKey, maxVal - current);
@@ -298,6 +335,23 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
             LOGGER.error("{} 载具补给出错: {}", LOG_PREFIX, e.getMessage());
             return false;
         }
+    }
+
+    /** 构建补给进度条字符串（同 KubeJS 的圆环 + 进度条） */
+    private static String buildProgressBar(float progress) {
+        int pct = (int) (progress * 100);
+        String circle;
+        if (progress >= 1.0f) circle = "§a●";
+        else if (progress >= 0.75f) circle = "§e◕";
+        else if (progress >= 0.50f) circle = "§6◑";
+        else if (progress >= 0.25f) circle = "§e◔";
+        else circle = "§7○";
+        StringBuilder bar = new StringBuilder();
+        for (int bi = 0; bi < 20; bi++) {
+            bar.append(bi < Math.floor(progress * 20) ? "§a■" : "§8□");
+        }
+        String status = (progress >= 1.0f) ? "§e补给中..." : "§e弹药补给中";
+        return circle + " " + status + " §a" + pct + "% " + bar;
     }
 
     /** 判断实体是否为 SBW/MCSP 载具 */
