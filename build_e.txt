@@ -1,0 +1,59 @@
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\Config.java:15: 警告: [removal] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+@EventBusSubscriber(modid = siege_tools.MODID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\Config.java:15: 警告: [removal] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+@EventBusSubscriber(modid = siege_tools.MODID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\siege_tools.java:121: 警告: [removal] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+                                       ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\siege_tools.java:121: 警告: [removal] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+                                                               ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\vehicle\block\AmmoCrateBlock.java:45: 错误: 无法将类 BaseEntityBlock中的方法 createTickerHelper应用到给定类型;
+        return createTickerHelper(type, ModBlockEntities.AMMO_STATION.get(), (BlockEntityTicker<T>) (BlockEntityTicker<AmmoCrateBlockEntity>) AmmoCrateBlockEntity::tick);
+               ^
+  需要: BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>
+  找到:    BlockEntityType<T>,BlockEntityType<AmmoCrateBlockEntity>,BlockEntityTicker<T>
+  原因: 推论变量 E 具有不兼容的上限
+    等式约束条件：AmmoCrateBlockEntity
+    上限：T,BlockEntity
+  其中, A,E,T是类型变量:
+    A扩展已在方法 <E,A>createTickerHelper(BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>)中声明的BlockEntity
+    E扩展已在方法 <E,A>createTickerHelper(BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>)中声明的BlockEntity
+    T扩展已在方法 <T>getTicker(Level,BlockState,BlockEntityType<T>)中声明的BlockEntity
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\vehicle\block\AmmoCrateBlock.java:69: 错误: 找不到符号
+        var ammoReg = VehicleDataManager.getAmmoRegistry();
+                                        ^
+  符号:   方法 getAmmoRegistry()
+  位置: 类 VehicleDataManager
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\vehicle\block\VehicleDeployerBlock.java:45: 错误: 无法将类 BaseEntityBlock中的方法 createTickerHelper应用到给定类型;
+        return createTickerHelper(type, ModBlockEntities.VEHICLE_DEPLOYER.get(), (BlockEntityTicker<T>) (BlockEntityTicker<VehicleDeployerBlockEntity>) VehicleDeployerBlockEntity::tick);
+               ^
+  需要: BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>
+  找到:    BlockEntityType<T>,BlockEntityType<VehicleDeployerBlockEntity>,BlockEntityTicker<T>
+  原因: 推论变量 E 具有不兼容的上限
+    等式约束条件：VehicleDeployerBlockEntity
+    上限：T,BlockEntity
+  其中, A,E,T是类型变量:
+    A扩展已在方法 <E,A>createTickerHelper(BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>)中声明的BlockEntity
+    E扩展已在方法 <E,A>createTickerHelper(BlockEntityType<A>,BlockEntityType<E>,BlockEntityTicker<? super E>)中声明的BlockEntity
+    T扩展已在方法 <T>getTicker(Level,BlockState,BlockEntityType<T>)中声明的BlockEntity
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+注: D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\vehicle\block\VehicleDeployerBlock.java使用了未经检查或不安全的操作。
+注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+3 个错误
+4 个警告
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s
