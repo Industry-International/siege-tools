@@ -400,11 +400,18 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
         enterDelay = tag.contains("enterDelay") ? tag.getInt("enterDelay") : 3;
         if (tag.contains("slots", Tag.TAG_COMPOUND)) {
             CompoundTag slotsTag = tag.getCompound("slots");
-            Map<String, Integer> loaded = new HashMap<>();
-            for (String key : slotsTag.getAllKeys()) {
-                loaded.put(key, slotsTag.getInt(key));
+            if (slotsTag.getAllKeys().isEmpty()) {
+                // 空 slots → 使用默认值（新方块或未配置的旧存档）
+                slots = getDefaultSlots();
+            } else {
+                Map<String, Integer> loaded = new HashMap<>();
+                for (String key : slotsTag.getAllKeys()) {
+                    loaded.put(key, slotsTag.getInt(key));
+                }
+                slots = loaded;
             }
-            slots = loaded;
+        } else {
+            slots = getDefaultSlots();
         }
         cooldownEnd = tag.getLong("cooldownEnd");
         if (tag.contains("vehicleTimers", Tag.TAG_COMPOUND)) {
@@ -430,8 +437,15 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
         return null; // UI handled by BlockUI interface on the block
     }
 
-    /** 默认弹药配置（空 — 由 GUI 负责配置） */
+    /** 默认弹药配置（从弹药注册表获取所有类型，默认 64 个） */
     public static Map<String, Integer> getDefaultSlots() {
-        return new HashMap<>();
+        Map<String, Integer> result = new HashMap<>();
+        var reg = VehicleDataManager.getAmmoTypes();
+        if (reg != null && reg.isLoaded()) {
+            for (String name : reg.getAllShortNames()) {
+                result.put(name, 64);
+            }
+        }
+        return result;
     }
 }
