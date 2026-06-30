@@ -150,7 +150,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         });
         vehSel.setOnValueChanged(newVid -> { if (newVid != null) fieldVtype.setText(newVid.toString()); });
 
-        UIElement root = new UIElement(); root.lss("width", 200).lss("padding", 2);
+        UIElement root = new UIElement(); root.lss("width", 200).lss("padding", 2).lss("overflow", "hidden");
         var title = new Label().setText(tl("gui.siege_tools.deployer.title"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
