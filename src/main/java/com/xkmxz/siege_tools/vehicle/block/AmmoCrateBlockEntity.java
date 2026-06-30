@@ -308,6 +308,24 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
 
     // ========== 配置管理 ==========
 
+    /** 一次性应用来自网络包 AmmoCrateConfigData 的配置 */
+    public void applyConfig(com.xkmxz.siege_tools.vehicle.network.AmmoCrateConfigData cfg) {
+        this.scanRange = cfg.scanRange();
+        this.cooldownSec = cfg.cooldown();
+        this.enterDelay = cfg.enterDelay();
+        // 从 CompoundTag 解析 slots
+        Map<String, Integer> loaded = new HashMap<>();
+        CompoundTag slotsTag = cfg.slots();
+        if (slotsTag != null) {
+            for (String key : slotsTag.getAllKeys()) {
+                loaded.put(key, slotsTag.getInt(key));
+            }
+        }
+        this.slots = loaded;
+        this.cooldownEnd = 0;
+        setChanged();
+    }
+
     public void applyConfig(int scanRange, int cooldown, int enterDelay, Map<String, Integer> slots) {
         this.scanRange = scanRange;
         this.cooldownSec = cooldown;

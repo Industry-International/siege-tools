@@ -166,7 +166,7 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     }
 
     /** 递归：CompoundTag → 标准 JSON 对象字符串 */
-    private static String nbtCompoundToJson(CompoundTag tag) {
+    public static String nbtCompoundToJson(CompoundTag tag) {
         StringBuilder sb = new StringBuilder("{");
         boolean first = true;
         for (String key : tag.getAllKeys()) {
@@ -211,6 +211,18 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
 
     public boolean isSpawnWithAmmo() { return spawnWithAmmo; }
     public void setSpawnWithAmmo(boolean spawnWithAmmo) { this.spawnWithAmmo = spawnWithAmmo; setChanged(); }
+
+    /** 一次性应用来自网络包的配置 */
+    public void applyConfig(com.xkmxz.siege_tools.vehicle.network.DeployerConfigData cfg) {
+        this.vehicleType = cfg.vehicleType();
+        this.respawnDelay = Math.max(20, cfg.respawnDelay());
+        this.autoRespawn = cfg.autoRespawn();
+        this.spawnWithAmmo = cfg.spawnWithAmmo();
+        this.offsetX = cfg.offsetX(); this.offsetY = cfg.offsetY(); this.offsetZ = cfg.offsetZ();
+        this.yaw = cfg.yaw(); this.pitch = cfg.pitch();
+        this.deployNBT = cfg.deployNBT() != null ? cfg.deployNBT() : new CompoundTag();
+        setChanged();
+    }
 
     // ========== NBT ==========
 

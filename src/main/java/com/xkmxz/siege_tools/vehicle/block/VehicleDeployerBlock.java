@@ -14,6 +14,7 @@ import com.xkmxz.siege_tools.vehicle.network.C2STriggerDeploy;
 import com.xkmxz.siege_tools.vehicle.network.S2CDeployerInitData;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -59,13 +60,15 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             if (raw instanceof VehicleDeployerBlockEntity be) {
                 PacketDistributor.sendToPlayer(sp, new S2CDeployerInitData(
                         pos,
-                        be.getVehicleType(),
-                        be.getRespawnDelay(),
-                        be.isAutoRespawn(),
-                        be.isSpawnWithAmmo(),
-                        be.getOffsetX(), be.getOffsetY(), be.getOffsetZ(),
-                        be.getYaw(), be.getPitch(),
-                        be.getDeployNBTAsJson()
+                        new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
+                                be.getVehicleType(),
+                                be.getRespawnDelay(),
+                                be.isAutoRespawn(),
+                                be.isSpawnWithAmmo(),
+                                be.getOffsetX(), be.getOffsetY(), be.getOffsetZ(),
+                                be.getYaw(), be.getPitch(),
+                                be.getDeployNBT()
+                        )
                 ));
             }
         }
@@ -169,18 +172,28 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存")); btnSave.lss("padding", "3 10");
         btnSave.setOnClick(e -> {
-            // 客户端读取当前字段值，发送网络包到服务端持久化
-            var nbt = fieldNBT.getText();
-            if (nbt.isEmpty()) nbt = "{}";
+            // 客户端读取当前字段值，解析 deployNBT JSON 为 CompoundTag
+            String nbtStr = fieldNBT.getText();
+            if (nbtStr.isEmpty()) nbtStr = "{}";
+            CompoundTag parsed;
+            try {
+                parsed = com.xkmxz.siege_tools.vehicle.util.JsonToNBTConverter.toCompoundTag(
+                        new com.google.gson.Gson().fromJson(nbtStr, com.google.gson.JsonObject.class));
+                if (parsed == null) parsed = new CompoundTag();
+            } catch (Exception ex) {
+                parsed = new CompoundTag();
+            }
             PacketDistributor.sendToServer(new C2SSaveDeployerConfig(
                     holder.pos,
-                    fieldVtype.getText(),
-                    Math.max(20, sInt(fieldDelay.getText(), 600)),
-                    "1".equals(fieldAuto.getText()),
-                    "1".equals(fieldAmmo.getText()),
-                    sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0),
-                    (float) sInt(fieldYaw.getText(), 0), (float) sInt(fieldPitch.getText(), 0),
-                    nbt
+                    new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
+                            fieldVtype.getText(),
+                            Math.max(20, sInt(fieldDelay.getText(), 600)),
+                            "1".equals(fieldAuto.getText()),
+                            "1".equals(fieldAmmo.getText()),
+                            sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0),
+                            (float) sInt(fieldYaw.getText(), 0), (float) sInt(fieldPitch.getText(), 0),
+                            parsed
+                    )
             ));
         });
         btnRow.addChild(btnSave);

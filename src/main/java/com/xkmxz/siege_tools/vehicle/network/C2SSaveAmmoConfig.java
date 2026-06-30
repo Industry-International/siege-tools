@@ -9,18 +9,13 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * C2S 网络包：保存弹药补给站配置。
+ * 数据载体使用共享的 {@link AmmoCrateConfigData}。
  */
 public record C2SSaveAmmoConfig(
         BlockPos pos,
-        int scanRange,
-        int cooldown,
-        int enterDelay,
-        Map<String, Integer> slots
+        AmmoCrateConfigData data
 ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<C2SSaveAmmoConfig> TYPE =
@@ -30,29 +25,16 @@ public record C2SSaveAmmoConfig(
             new StreamCodec<>() {
                 @Override
                 public C2SSaveAmmoConfig decode(FriendlyByteBuf buf) {
-                    BlockPos pos = buf.readBlockPos();
-                    int scanRange = buf.readInt();
-                    int cooldown = buf.readInt();
-                    int enterDelay = buf.readInt();
-                    int slotCount = buf.readVarInt();
-                    Map<String, Integer> slots = new HashMap<>();
-                    for (int i = 0; i < slotCount; i++) {
-                        slots.put(buf.readUtf(), buf.readInt());
-                    }
-                    return new C2SSaveAmmoConfig(pos, scanRange, cooldown, enterDelay, slots);
+                    return new C2SSaveAmmoConfig(
+                            buf.readBlockPos(),
+                            AmmoCrateConfigData.STREAM_CODEC.decode(buf)
+                    );
                 }
 
                 @Override
                 public void encode(FriendlyByteBuf buf, C2SSaveAmmoConfig packet) {
                     buf.writeBlockPos(packet.pos);
-                    buf.writeInt(packet.scanRange);
-                    buf.writeInt(packet.cooldown);
-                    buf.writeInt(packet.enterDelay);
-                    buf.writeVarInt(packet.slots.size());
-                    for (Map.Entry<String, Integer> entry : packet.slots.entrySet()) {
-                        buf.writeUtf(entry.getKey());
-                        buf.writeInt(entry.getValue());
-                    }
+                    AmmoCrateConfigData.STREAM_CODEC.encode(buf, packet.data);
                 }
             };
 
@@ -68,7 +50,7 @@ public record C2SSaveAmmoConfig(
             var level = player.level();
             var be = level.getBlockEntity(payload.pos);
             if (be instanceof AmmoCrateBlockEntity station) {
-                station.applyConfig(payload.scanRange, payload.cooldown, payload.enterDelay, payload.slots);
+                station.applyConfig(payload.data);
                 player.displayClientMessage(
                         net.minecraft.network.chat.Component.literal("§a✔ 配置已保存！冷却已重置"), false);
             }

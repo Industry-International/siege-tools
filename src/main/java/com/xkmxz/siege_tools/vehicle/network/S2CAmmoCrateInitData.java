@@ -10,18 +10,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * S2C 网络包：服务端向客户端推送弹药补给站的初始数据，用于初始化 GUI 文本框。
+ * S2C 网络包：服务端向客户端推送弹药补给站的初始数据。
+ * 数据载体使用共享的 {@link AmmoCrateConfigData}。
  */
 public record S2CAmmoCrateInitData(
         BlockPos pos,
-        int scanRange,
-        int cooldown,
-        int enterDelay,
-        Map<String, Integer> slots
+        AmmoCrateConfigData data
 ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<S2CAmmoCrateInitData> TYPE =
@@ -31,29 +26,16 @@ public record S2CAmmoCrateInitData(
             new StreamCodec<>() {
                 @Override
                 public S2CAmmoCrateInitData decode(FriendlyByteBuf buf) {
-                    BlockPos pos = buf.readBlockPos();
-                    int scanRange = buf.readInt();
-                    int cooldown = buf.readInt();
-                    int enterDelay = buf.readInt();
-                    int slotCount = buf.readVarInt();
-                    Map<String, Integer> slots = new HashMap<>();
-                    for (int i = 0; i < slotCount; i++) {
-                        slots.put(buf.readUtf(), buf.readInt());
-                    }
-                    return new S2CAmmoCrateInitData(pos, scanRange, cooldown, enterDelay, slots);
+                    return new S2CAmmoCrateInitData(
+                            buf.readBlockPos(),
+                            AmmoCrateConfigData.STREAM_CODEC.decode(buf)
+                    );
                 }
 
                 @Override
                 public void encode(FriendlyByteBuf buf, S2CAmmoCrateInitData packet) {
                     buf.writeBlockPos(packet.pos);
-                    buf.writeInt(packet.scanRange);
-                    buf.writeInt(packet.cooldown);
-                    buf.writeInt(packet.enterDelay);
-                    buf.writeVarInt(packet.slots.size());
-                    for (Map.Entry<String, Integer> entry : packet.slots.entrySet()) {
-                        buf.writeUtf(entry.getKey());
-                        buf.writeInt(entry.getValue());
-                    }
+                    AmmoCrateConfigData.STREAM_CODEC.encode(buf, packet.data);
                 }
             };
 
@@ -68,22 +50,23 @@ public record S2CAmmoCrateInitData(
             if (player == null) return;
             var menu = player.containerMenu;
             if (menu instanceof ModularUIContainerMenu mcm) {
-                ModularUI modularUI = mcm.getModularUI();
-                setTextFieldText(modularUI, "ammo_scanRange", String.valueOf(payload.scanRange));
-                setTextFieldText(modularUI, "ammo_cooldown", String.valueOf(payload.cooldown));
-                setTextFieldText(modularUI, "ammo_enterDelay", String.valueOf(payload.enterDelay));
+                ModularUI ui = mcm.getModularUI();
+                AmmoCrateConfigData d = payload.data;
+                setText(ui, "ammo_scanRange", String.valueOf(d.scanRange()));
+                setText(ui, "ammo_cooldown", String.valueOf(d.cooldown()));
+                setText(ui, "ammo_enterDelay", String.valueOf(d.enterDelay()));
                 // 弹药槽位
-                for (Map.Entry<String, Integer> entry : payload.slots.entrySet()) {
-                    setTextFieldText(modularUI, "ammo_slot_" + entry.getKey(), String.valueOf(entry.getValue()));
+                if (d.slots() != null) {
+                    for (String key : d.slots().getAllKeys()) {
+                        setText(ui, "ammo_slot_" + key, String.valueOf(d.slots().getInt(key)));
+                    }
                 }
             }
         });
     }
 
-    private static void setTextFieldText(ModularUI ui, String id, String text) {
+    private static void setText(ModularUI ui, String id, String text) {
         var elem = ui.getElementById(id);
-        if (elem instanceof TextField tf) {
-            tf.setText(text);
-        }
+        if (elem instanceof TextField tf) tf.setText(text);
     }
 }

@@ -1,12 +1,8 @@
 package com.xkmxz.siege_tools.vehicle.network;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.xkmxz.siege_tools.siege_tools;
 import com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity;
-import com.xkmxz.siege_tools.vehicle.util.JsonToNBTConverter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -15,16 +11,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * C2S 网络包：保存载具部署台配置。
+ * 数据载体使用共享的 {@link DeployerConfigData}。
  */
 public record C2SSaveDeployerConfig(
         BlockPos pos,
-        String vehicleType,
-        int respawnDelay,
-        boolean autoRespawn,
-        boolean spawnWithAmmo,
-        double offsetX, double offsetY, double offsetZ,
-        float yaw, float pitch,
-        String deployNBT
+        DeployerConfigData data
 ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<C2SSaveDeployerConfig> TYPE =
@@ -36,29 +27,14 @@ public record C2SSaveDeployerConfig(
                 public C2SSaveDeployerConfig decode(FriendlyByteBuf buf) {
                     return new C2SSaveDeployerConfig(
                             buf.readBlockPos(),
-                            buf.readUtf(),
-                            buf.readInt(),
-                            buf.readBoolean(),
-                            buf.readBoolean(),
-                            buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                            buf.readFloat(), buf.readFloat(),
-                            buf.readUtf()
+                            DeployerConfigData.STREAM_CODEC.decode(buf)
                     );
                 }
 
                 @Override
                 public void encode(FriendlyByteBuf buf, C2SSaveDeployerConfig packet) {
                     buf.writeBlockPos(packet.pos);
-                    buf.writeUtf(packet.vehicleType);
-                    buf.writeInt(packet.respawnDelay);
-                    buf.writeBoolean(packet.autoRespawn);
-                    buf.writeBoolean(packet.spawnWithAmmo);
-                    buf.writeDouble(packet.offsetX);
-                    buf.writeDouble(packet.offsetY);
-                    buf.writeDouble(packet.offsetZ);
-                    buf.writeFloat(packet.yaw);
-                    buf.writeFloat(packet.pitch);
-                    buf.writeUtf(packet.deployNBT);
+                    DeployerConfigData.STREAM_CODEC.encode(buf, packet.data);
                 }
             };
 
@@ -74,21 +50,7 @@ public record C2SSaveDeployerConfig(
             var level = player.level();
             var be = level.getBlockEntity(payload.pos);
             if (be instanceof VehicleDeployerBlockEntity deployer) {
-                deployer.setVehicleType(payload.vehicleType);
-                deployer.setRespawnDelay(Math.max(20, payload.respawnDelay));
-                deployer.setAutoRespawn(payload.autoRespawn);
-                deployer.setSpawnWithAmmo(payload.spawnWithAmmo);
-                deployer.setOffsets(payload.offsetX, payload.offsetY, payload.offsetZ, payload.yaw, payload.pitch);
-                // 将网络包中的 JSON 字符串解析为 CompoundTag 再存入 BE
-                String nbtStr = payload.deployNBT != null ? payload.deployNBT : "{}";
-                CompoundTag parsedNBT;
-                try {
-                    JsonObject obj = new Gson().fromJson(nbtStr, JsonObject.class);
-                    parsedNBT = (obj != null) ? JsonToNBTConverter.toCompoundTag(obj) : new CompoundTag();
-                } catch (Exception e) {
-                    parsedNBT = new CompoundTag();
-                }
-                deployer.setDeployNBT(parsedNBT);
+                deployer.applyConfig(payload.data);
                 player.displayClientMessage(
                         net.minecraft.network.chat.Component.literal("§a✔ 配置已保存！"), false);
             }

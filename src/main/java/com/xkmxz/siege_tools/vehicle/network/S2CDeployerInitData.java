@@ -1,5 +1,8 @@
 package com.xkmxz.siege_tools.vehicle.network;
 
+import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
 import com.xkmxz.siege_tools.siege_tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -8,17 +11,12 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * S2C 网络包：服务端向客户端推送载具部署台的初始数据，用于初始化 GUI 文本框。
+ * S2C 网络包：服务端向客户端推送载具部署台的初始数据。
+ * 数据载体使用共享的 {@link DeployerConfigData}。
  */
 public record S2CDeployerInitData(
         BlockPos pos,
-        String vehicleType,
-        int respawnDelay,
-        boolean autoRespawn,
-        boolean spawnWithAmmo,
-        double offsetX, double offsetY, double offsetZ,
-        float yaw, float pitch,
-        String deployNBT
+        DeployerConfigData data
 ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<S2CDeployerInitData> TYPE =
@@ -30,29 +28,14 @@ public record S2CDeployerInitData(
                 public S2CDeployerInitData decode(FriendlyByteBuf buf) {
                     return new S2CDeployerInitData(
                             buf.readBlockPos(),
-                            buf.readUtf(),
-                            buf.readInt(),
-                            buf.readBoolean(),
-                            buf.readBoolean(),
-                            buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                            buf.readFloat(), buf.readFloat(),
-                            buf.readUtf()
+                            DeployerConfigData.STREAM_CODEC.decode(buf)
                     );
                 }
 
                 @Override
                 public void encode(FriendlyByteBuf buf, S2CDeployerInitData packet) {
                     buf.writeBlockPos(packet.pos);
-                    buf.writeUtf(packet.vehicleType);
-                    buf.writeInt(packet.respawnDelay);
-                    buf.writeBoolean(packet.autoRespawn);
-                    buf.writeBoolean(packet.spawnWithAmmo);
-                    buf.writeDouble(packet.offsetX);
-                    buf.writeDouble(packet.offsetY);
-                    buf.writeDouble(packet.offsetZ);
-                    buf.writeFloat(packet.yaw);
-                    buf.writeFloat(packet.pitch);
-                    buf.writeUtf(packet.deployNBT);
+                    DeployerConfigData.STREAM_CODEC.encode(buf, packet.data);
                 }
             };
 
@@ -61,35 +44,30 @@ public record S2CDeployerInitData(
         return TYPE;
     }
 
-    /**
-     * 客户端处理：通过 ModularUI 的元素 ID 查找 TextField 并更新初始值。
-     */
     public static void handle(S2CDeployerInitData payload, net.neoforged.neoforge.network.handling.IPayloadContext context) {
         context.enqueueWork(() -> {
             var player = context.player();
             if (player == null) return;
             var menu = player.containerMenu;
-            if (menu instanceof com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu mcm) {
-                var modularUI = mcm.getModularUI();
-                // 更新各字段
-                setTextFieldText(modularUI, "deployer_vehicleType", payload.vehicleType);
-                setTextFieldText(modularUI, "deployer_respawnDelay", String.valueOf(payload.respawnDelay));
-                setTextFieldText(modularUI, "deployer_autoRespawn", payload.autoRespawn ? "1" : "0");
-                setTextFieldText(modularUI, "deployer_spawnWithAmmo", payload.spawnWithAmmo ? "1" : "0");
-                setTextFieldText(modularUI, "deployer_offsetX", String.valueOf((int) payload.offsetX));
-                setTextFieldText(modularUI, "deployer_offsetY", String.valueOf((int) payload.offsetY));
-                setTextFieldText(modularUI, "deployer_offsetZ", String.valueOf((int) payload.offsetZ));
-                setTextFieldText(modularUI, "deployer_yaw", String.valueOf((int) payload.yaw));
-                setTextFieldText(modularUI, "deployer_pitch", String.valueOf((int) payload.pitch));
-                setTextFieldText(modularUI, "deployer_deployNBT", payload.deployNBT);
+            if (menu instanceof ModularUIContainerMenu mcm) {
+                ModularUI ui = mcm.getModularUI();
+                DeployerConfigData d = payload.data;
+                setText(ui, "deployer_vehicleType", d.vehicleType());
+                setText(ui, "deployer_respawnDelay", String.valueOf(d.respawnDelay()));
+                setText(ui, "deployer_autoRespawn", d.autoRespawn() ? "1" : "0");
+                setText(ui, "deployer_spawnWithAmmo", d.spawnWithAmmo() ? "1" : "0");
+                setText(ui, "deployer_offsetX", String.valueOf((int) d.offsetX()));
+                setText(ui, "deployer_offsetY", String.valueOf((int) d.offsetY()));
+                setText(ui, "deployer_offsetZ", String.valueOf((int) d.offsetZ()));
+                setText(ui, "deployer_yaw", String.valueOf((int) d.yaw()));
+                setText(ui, "deployer_pitch", String.valueOf((int) d.pitch()));
+                setText(ui, "deployer_deployNBT", com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity.nbtCompoundToJson(d.deployNBT()));
             }
         });
     }
 
-    private static void setTextFieldText(com.lowdragmc.lowdraglib2.gui.ui.ModularUI ui, String id, String text) {
+    private static void setText(ModularUI ui, String id, String text) {
         var elem = ui.getElementById(id);
-        if (elem instanceof com.lowdragmc.lowdraglib2.gui.ui.elements.TextField tf) {
-            tf.setText(text);
-        }
+        if (elem instanceof TextField tf) tf.setText(text);
     }
 }

@@ -55,12 +55,19 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
             // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
             BlockEntity raw = level.getBlockEntity(pos);
             if (raw instanceof AmmoCrateBlockEntity be) {
+                // slots Map → CompoundTag
+                net.minecraft.nbt.CompoundTag slotsTag = new net.minecraft.nbt.CompoundTag();
+                for (java.util.Map.Entry<String, Integer> entry : be.getSlots().entrySet()) {
+                    slotsTag.putInt(entry.getKey(), entry.getValue());
+                }
                 PacketDistributor.sendToPlayer(sp, new S2CAmmoCrateInitData(
                         pos,
-                        be.getScanRange(),
-                        be.getCooldownSec(),
-                        be.getEnterDelay(),
-                        new HashMap<>(be.getSlots())
+                        new com.xkmxz.siege_tools.vehicle.network.AmmoCrateConfigData(
+                                be.getScanRange(),
+                                be.getCooldownSec(),
+                                be.getEnterDelay(),
+                                slotsTag
+                        )
                 ));
             }
         }
@@ -146,28 +153,31 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存配置")); btnSave.lss("padding", "3 10");
         btnSave.setOnClick(e -> {
-            // 客户端读取当前字段值，发送网络包到服务端持久化
-            Map<String, Integer> ns = new HashMap<>();
+            // 客户端读取当前字段值，slots 转为 CompoundTag 发送到服务端
+            net.minecraft.nbt.CompoundTag slotsTag = new net.minecraft.nbt.CompoundTag();
             for (String sn : ammoShortNames) {
-                try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) ns.put(sn, v); } catch (Exception ex) { /* 跳过非法值 */ }
+                try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) slotsTag.putInt(sn, v); } catch (Exception ex) { }
             }
             PacketDistributor.sendToServer(new C2SSaveAmmoConfig(
                     holder.pos,
-                    sInt(fieldScan.getText(), 12),
-                    sInt(fieldCool.getText(), 5),
-                    sInt(fieldEnter.getText(), 3),
-                    ns
+                    new com.xkmxz.siege_tools.vehicle.network.AmmoCrateConfigData(
+                            sInt(fieldScan.getText(), 12),
+                            sInt(fieldCool.getText(), 5),
+                            sInt(fieldEnter.getText(), 3),
+                            slotsTag
+                    )
             ));
         });
         btnRow.addChild(btnSave);
 
         Button btnReset = new Button().setText(Component.literal("§e↻ 重置默认")); btnReset.lss("padding", "3 10");
         btnReset.setOnClick(e -> {
-            // 发一个默认值配置包到服务端实现重置
             PacketDistributor.sendToServer(new C2SSaveAmmoConfig(
                     holder.pos,
-                    12, 5, 3,
-                    new HashMap<>()
+                    new com.xkmxz.siege_tools.vehicle.network.AmmoCrateConfigData(
+                            12, 5, 3,
+                            new net.minecraft.nbt.CompoundTag()
+                    )
             ));
         });
         btnRow.addChild(btnReset);
