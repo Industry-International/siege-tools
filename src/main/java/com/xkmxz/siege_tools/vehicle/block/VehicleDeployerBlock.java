@@ -9,6 +9,8 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.*;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.mojang.serialization.MapCodec;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
+import com.xkmxz.siege_tools.vehicle.network.C2SSaveDeployerConfig;
+import com.xkmxz.siege_tools.vehicle.network.C2STriggerDeploy;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -155,28 +158,27 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
 
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存")); btnSave.lss("padding", "3 10");
-        btnSave.setOnServerClick(e -> {
-            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
-            if (!(r instanceof VehicleDeployerBlockEntity b)) return;
-            b.setVehicleType(fieldVtype.getText());
-            b.setRespawnDelay(Math.max(20, sInt(fieldDelay.getText(), 600)));
-            b.setAutoRespawn("1".equals(fieldAuto.getText()));
-            b.setSpawnWithAmmo("1".equals(fieldAmmo.getText()));
-            b.setOffsets(sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0), (float)sInt(fieldYaw.getText(), 0), (float)sInt(fieldPitch.getText(), 0));
-            var nbt = fieldNBT.getText(); if (nbt.isEmpty()) nbt = "{}";
-            b.setDeployNBT(nbt);
-            b.setChanged();
-            holder.player.displayClientMessage(Component.literal("§a✔ 配置已保存！"), false);
+        btnSave.setOnClick(e -> {
+            // 客户端读取当前字段值，发送网络包到服务端持久化
+            var nbt = fieldNBT.getText();
+            if (nbt.isEmpty()) nbt = "{}";
+            PacketDistributor.sendToServer(new C2SSaveDeployerConfig(
+                    holder.pos,
+                    fieldVtype.getText(),
+                    Math.max(20, sInt(fieldDelay.getText(), 600)),
+                    "1".equals(fieldAuto.getText()),
+                    "1".equals(fieldAmmo.getText()),
+                    sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0),
+                    (float) sInt(fieldYaw.getText(), 0), (float) sInt(fieldPitch.getText(), 0),
+                    nbt
+            ));
         });
         btnRow.addChild(btnSave);
 
         Button btnDeploy = new Button().setText(Component.literal("§6⚡ 立即部署")); btnDeploy.lss("padding", "3 10");
-        btnDeploy.setOnServerClick(e -> {
-            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
-            if (!(r instanceof VehicleDeployerBlockEntity b)) return;
-            if (b.getVehicleType().isEmpty()) { holder.player.displayClientMessage(Component.literal("§c请先配置载具类型"), false); return; }
-            b.setPendingDeploy(true);
-            holder.player.displayClientMessage(Component.literal("§e⏳ 部署命令已提交"), false);
+        btnDeploy.setOnClick(e -> {
+            // 客户端发送触发部署网络包到服务端
+            PacketDistributor.sendToServer(new C2STriggerDeploy(holder.pos));
         });
         btnRow.addChild(btnDeploy);
         root.addChild(btnRow);

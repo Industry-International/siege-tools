@@ -9,6 +9,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.*;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.mojang.serialization.MapCodec;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
+import com.xkmxz.siege_tools.vehicle.network.C2SSaveAmmoConfig;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -131,13 +133,19 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         // 保存/重置按钮
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存配置")); btnSave.lss("padding", "3 10");
-        btnSave.setOnServerClick(e -> {
-            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
-            if (!(r instanceof AmmoCrateBlockEntity b)) return;
+        btnSave.setOnClick(e -> {
+            // 客户端读取当前字段值，发送网络包到服务端持久化
             Map<String, Integer> ns = new HashMap<>();
-            for (String sn : ammoShortNames) { try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) ns.put(sn, v); } catch (Exception ex) {} }
-            b.applyConfig(sInt(fieldScan.getText(), 12), sInt(fieldCool.getText(), 5), sInt(fieldEnter.getText(), 3), ns);
-            holder.player.displayClientMessage(Component.literal("§a✔ 配置已保存！冷却已重置"), false);
+            for (String sn : ammoShortNames) {
+                try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) ns.put(sn, v); } catch (Exception ex) { /* 跳过非法值 */ }
+            }
+            PacketDistributor.sendToServer(new C2SSaveAmmoConfig(
+                    holder.pos,
+                    sInt(fieldScan.getText(), 12),
+                    sInt(fieldCool.getText(), 5),
+                    sInt(fieldEnter.getText(), 3),
+                    ns
+            ));
         });
         btnRow.addChild(btnSave);
 
