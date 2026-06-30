@@ -215,6 +215,6 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return null; // 将在 Phase 4 GUI 中实现
+        return new com.xkmxz.siege_tools.vehicle.gui.DeployerMenu(containerId, playerInv, this);
     }
 }

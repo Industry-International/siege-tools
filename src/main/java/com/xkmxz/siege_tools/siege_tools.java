@@ -126,5 +126,13 @@ public class siege_tools {
             // 注册实体渲染器
             EntityRenderers.register(siege_tools.AMMO_KIT_ENTITY.get(), AmmoKitRenderer::new);
         }
+
+        @SubscribeEvent
+        public static void onRegisterMenuScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+            event.register(ModMenuTypes.AMMO_STATION.get(),
+                    com.xkmxz.siege_tools.vehicle.gui.AmmoStationScreen::new);
+            event.register(ModMenuTypes.VEHICLE_DEPLOYER.get(),
+                    com.xkmxz.siege_tools.vehicle.gui.DeployerScreen::new);
+        }
     }
 }

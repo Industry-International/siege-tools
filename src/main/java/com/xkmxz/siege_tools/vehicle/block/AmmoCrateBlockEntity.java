@@ -376,7 +376,7 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return null; // 将在 Phase 4 GUI 中实现
+        return new com.xkmxz.siege_tools.vehicle.gui.AmmoStationMenu(containerId, playerInv, this);
     }
 
     // ========== JSON 序列化 ==========
