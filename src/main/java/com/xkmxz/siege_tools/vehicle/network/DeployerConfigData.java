@@ -50,4 +50,33 @@ public record DeployerConfigData(
 
     /** 字段数量校验：encode 写多少次，这里就应是多少 */
     static int fieldCount() { return 10; }
+
+    /** 转为 CompoundTag（用于统一网络包） */
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("vehicleType", vehicleType);
+        tag.putInt("respawnDelay", respawnDelay);
+        tag.putBoolean("autoRespawn", autoRespawn);
+        tag.putBoolean("spawnWithAmmo", spawnWithAmmo);
+        tag.putDouble("offsetX", offsetX);
+        tag.putDouble("offsetY", offsetY);
+        tag.putDouble("offsetZ", offsetZ);
+        tag.putFloat("yaw", yaw);
+        tag.putFloat("pitch", pitch);
+        tag.put("deployNBT", deployNBT != null ? deployNBT : new CompoundTag());
+        return tag;
+    }
+
+    /** 从 CompoundTag 解析（用于统一网络包） */
+    public static DeployerConfigData fromTag(CompoundTag tag) {
+        return new DeployerConfigData(
+                tag.getString("vehicleType"),
+                tag.getInt("respawnDelay"),
+                tag.getBoolean("autoRespawn"),
+                tag.getBoolean("spawnWithAmmo"),
+                tag.getDouble("offsetX"), tag.getDouble("offsetY"), tag.getDouble("offsetZ"),
+                tag.getFloat("yaw"), tag.getFloat("pitch"),
+                tag.contains("deployNBT") ? tag.getCompound("deployNBT") : new CompoundTag()
+        );
+    }
 }

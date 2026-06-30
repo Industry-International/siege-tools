@@ -9,9 +9,9 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.*;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.mojang.serialization.MapCodec;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
-import com.xkmxz.siege_tools.vehicle.network.C2SSaveDeployerConfig;
-import com.xkmxz.siege_tools.vehicle.network.C2STriggerDeploy;
-import com.xkmxz.siege_tools.vehicle.network.S2CDeployerInitData;
+import com.xkmxz.siege_tools.vehicle.network.C2SVehiclePacket;
+import com.xkmxz.siege_tools.vehicle.network.DeployerConfigData;
+import com.xkmxz.siege_tools.vehicle.network.S2CVehiclePacket;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -58,9 +58,9 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
             BlockEntity raw = level.getBlockEntity(pos);
             if (raw instanceof VehicleDeployerBlockEntity be) {
-                PacketDistributor.sendToPlayer(sp, new S2CDeployerInitData(
+                PacketDistributor.sendToPlayer(sp, S2CVehiclePacket.initDeployer(
                         pos,
-                        new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
+                        new DeployerConfigData(
                                 be.getVehicleType(),
                                 be.getRespawnDelay(),
                                 be.isAutoRespawn(),
@@ -183,7 +183,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             } catch (Exception ex) {
                 parsed = new CompoundTag();
             }
-            PacketDistributor.sendToServer(new C2SSaveDeployerConfig(
+            PacketDistributor.sendToServer(C2SVehiclePacket.saveDeployer(
                     holder.pos,
                     new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
                             fieldVtype.getText(),
@@ -201,7 +201,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         Button btnDeploy = new Button().setText(Component.literal("§6⚡ 立即部署")); btnDeploy.lss("padding", "3 10");
         btnDeploy.setOnClick(e -> {
             // 客户端发送触发部署网络包到服务端
-            PacketDistributor.sendToServer(new C2STriggerDeploy(holder.pos));
+            PacketDistributor.sendToServer(C2SVehiclePacket.triggerDeploy(holder.pos));
         });
         btnRow.addChild(btnDeploy);
         root.addChild(btnRow);
