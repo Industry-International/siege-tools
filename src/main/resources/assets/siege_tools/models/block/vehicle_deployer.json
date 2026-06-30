@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "kubejs:block/vehicle_deployer"
+    "all": "siege_tools:block/vehicle_deployer"
   }
 }

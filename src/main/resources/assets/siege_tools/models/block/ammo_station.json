@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "kubejs:block/ammo_crate"
+    "all": "siege_tools:block/ammo_station"
   }
 }
