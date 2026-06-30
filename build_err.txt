@@ -1,0 +1,25 @@
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\siege_tools.java:121: 警告: [removal] EventBusSubscriber 中的 bus() 已过时, 且标记为待删除
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+                                       ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\siege_tools.java:121: 警告: [removal] EventBusSubscriber 中的 Bus 已过时, 且标记为待删除
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+                                                               ^
+D:\开发\攻防战地图\siege tools\src\main\java\com\xkmxz\siege_tools\vehicle\block\AmmoCrateBlock.java:46: 错误: 找不到符号
+        return (BlockEntityTicker<T>) createTickerHelper(type, ModBlockEntities.AMMO_CRATE.get(), AmmoCrateBlockEntity::tick);
+                                                                               ^
+  符号:   变量 AMMO_CRATE
+  位置: 类 ModBlockEntities
+1 个错误
+2 个警告
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1s

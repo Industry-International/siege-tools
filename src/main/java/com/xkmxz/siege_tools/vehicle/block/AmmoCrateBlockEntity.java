@@ -336,10 +336,24 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void resetConfig() {
-        this.scanRange = 12;
-        this.cooldownSec = 5;
-        this.enterDelay = 3;
-        this.slots = getDefaultSlots();
+        applyDataPackDefaults();
+    }
+
+    public void applyDataPackDefaults() {
+        CompoundTag def = VehicleDataManager.getDefaultAmmoConfig();
+        this.scanRange = def.contains("scanRange") ? def.getInt("scanRange") : 12;
+        this.cooldownSec = def.contains("cooldown") ? def.getInt("cooldown") : 5;
+        this.enterDelay = def.contains("enterDelay") ? def.getInt("enterDelay") : 3;
+        if (def.contains("slots")) {
+            CompoundTag slotsTag = def.getCompound("slots");
+            Map<String, Integer> loaded = new HashMap<>();
+            for (String key : slotsTag.getAllKeys()) {
+                loaded.put(key, slotsTag.getInt(key));
+            }
+            this.slots = loaded;
+        } else {
+            this.slots = new HashMap<>();
+        }
         this.cooldownEnd = 0;
         setChanged();
     }

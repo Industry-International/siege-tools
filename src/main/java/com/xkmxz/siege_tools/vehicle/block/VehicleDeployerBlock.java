@@ -104,7 +104,17 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         TextField fieldOz = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOz.setId("deployer_offsetZ"); fieldOz.lss("width", 50);
         TextField fieldYaw = new TextField().setNumbersOnlyInt(-180, 180).setText("0"); fieldYaw.setId("deployer_yaw"); fieldYaw.lss("width", 50);
         TextField fieldPitch = new TextField().setNumbersOnlyInt(-90, 90).setText("0"); fieldPitch.setId("deployer_pitch"); fieldPitch.lss("width", 50);
-        TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 250).lss("height", 100);
+        TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 250).lss("height", 80);
+
+        // 简单 NBT 字段（从数据库默认值预填）
+        TextField fieldNbtEnergy = new TextField().setNumbersOnlyInt(0, 999999999);
+        fieldNbtEnergy.setId("deployer_nbt_energy"); fieldNbtEnergy.lss("width", 80);
+        TextField fieldNbtHealth = new TextField().setNumbersOnlyInt(0, 999999);
+        fieldNbtHealth.setId("deployer_nbt_health"); fieldNbtHealth.lss("width", 80);
+        TextField fieldNbtInvul = new TextField().setNumbersOnlyInt(0, 1);
+        fieldNbtInvul.setId("deployer_nbt_invul"); fieldNbtInvul.lss("width", 40);
+        TextField fieldNbtDecoy = new TextField().setNumbersOnlyInt(0, 1);
+        fieldNbtDecoy.setId("deployer_nbt_decoy"); fieldNbtDecoy.lss("width", 40);
 
         // 类别/载具选择器
         Selector catSel = new Selector(); catSel.setId("deployer_category"); catSel.lss("width", "100%");
@@ -171,12 +181,49 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         addGap(p3); addRow(p3, "§7朝向(yaw):", fieldYaw, " °"); addRow(p3, "§7俯仰(pitch):", fieldPitch, " °");
         tv.addTab(new Tab().setText("坐标"), p3);
 
-        // Tab 4: NBT
+        // Tab 4: ⚙NBT简单 — 参数化配置
         UIElement p4 = new UIElement(); p4.lss("padding", 4);
-        p4.addChild(new Label().setText(Component.literal("§e── deployNBT ──")));
-        p4.addChild(new Label().setText(Component.literal("§8留空 {} 使用数据库默认值")));
-        addGap(p4); p4.addChild(fieldNBT);
-        tv.addTab(new Tab().setText("NBT"), p4);
+        p4.addChild(new Label().setText(Component.literal("§e── NBT 参数配置 ──")));
+        p4.addChild(new Label().setText(Component.literal("§7修改部署时的核心属性，留空则使用数据库默认值")));
+        addGap(p4);
+        addRow(p4, "§eEnergy  §7能量:", fieldNbtEnergy, "");
+        p4.addChild(new Label().setText(Component.literal("  §8载具总能量，影响武器可用性（0=没电）")));
+        addRow(p4, "§eHealth  §7生命值:", fieldNbtHealth, "");
+        p4.addChild(new Label().setText(Component.literal("  §8载具总生命值，归零则摧毁")));
+        addRow(p4, "§eInvulnerable  §7无敌:", fieldNbtInvul, "  §8(1=是, 0=否)");
+        addRow(p4, "§eDecoyReady  §7诱饵弹:", fieldNbtDecoy, "  §8(1=就绪, 0=未装填)");
+        addGap(p4);
+        // 应用数据库默认值按钮（客户端操作：从已有 init 数据提取对应字段填入）
+        Button btnApplyDefaults = new Button();
+        btnApplyDefaults.setText(Component.literal("§b⟳ 应用数据库默认值"));
+        btnApplyDefaults.lss("padding", "3 8");
+        btnApplyDefaults.setOnClick(e -> {
+            // 从 deployer_deployNBT 提取默认值
+            String nbtJson = fieldNBT.getText();
+            if (nbtJson.isEmpty() || "{}".equals(nbtJson)) return;
+            try {
+                var obj = new com.google.gson.Gson().fromJson(nbtJson, com.google.gson.JsonObject.class);
+                if (obj != null) {
+                    if (obj.has("Energy")) fieldNbtEnergy.setText(String.valueOf(obj.get("Energy").getAsInt()));
+                    if (obj.has("Health")) fieldNbtHealth.setText(String.valueOf(obj.get("Health").getAsInt()));
+                    if (obj.has("Invulnerable")) fieldNbtInvul.setText(String.valueOf(obj.get("Invulnerable").getAsInt()));
+                    if (obj.has("DecoyReady")) fieldNbtDecoy.setText(String.valueOf(obj.get("DecoyReady").getAsInt()));
+                }
+            } catch (Exception ignored) {}
+        });
+        p4.addChild(btnApplyDefaults);
+        tv.addTab(new Tab().setText("⚙NBT简单"), p4);
+
+        // Tab 5: ⚡NBT高级 — 原始 JSON
+        UIElement p5 = new UIElement(); p5.lss("padding", 4);
+        p5.addChild(new Label().setText(Component.literal("§e── deployNBT 原始 JSON ──")));
+        p5.addChild(new Label().setText(Component.literal("§7完全自定义的部署 NBT 模板")));
+        addGap(p5);
+        p5.addChild(new Label().setText(Component.literal("§8留空 {} 则使用数据库完整默认值。")));
+        p5.addChild(new Label().setText(Component.literal("§8填写部分字段则会与数据库模板合并。")));
+        addGap(p5);
+        p5.addChild(fieldNBT);
+        tv.addTab(new Tab().setText("⚡NBT高级"), p5);
 
         root.addChild(tv);
         root.addChild(sep());
@@ -195,6 +242,11 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             } catch (Exception ex) {
                 parsed = new CompoundTag();
             }
+            // 合并简单 NBT 字段（如果 ⚙NBT简单 中的值非空，覆盖到 deployNBT）
+            try { int v = Integer.parseInt(fieldNbtEnergy.getText()); parsed.putInt("Energy", v); } catch (Exception ignored) {}
+            try { int v = Integer.parseInt(fieldNbtHealth.getText()); parsed.putInt("Health", v); } catch (Exception ignored) {}
+            try { int v = Integer.parseInt(fieldNbtInvul.getText()); parsed.putInt("Invulnerable", v); } catch (Exception ignored) {}
+            try { int v = Integer.parseInt(fieldNbtDecoy.getText()); parsed.putInt("DecoyReady", v); } catch (Exception ignored) {}
             PacketDistributor.sendToServer(C2SVehiclePacket.saveDeployer(
                     holder.pos,
                     new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
@@ -209,6 +261,12 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             ));
         });
         btnRow.addChild(btnSave);
+
+        Button btnReset = new Button().setText(Component.literal("§e↻ 重置")); btnReset.lss("padding", "3 10");
+        btnReset.setOnClick(e -> {
+            PacketDistributor.sendToServer(C2SVehiclePacket.resetDeployer(holder.pos));
+        });
+        btnRow.addChild(btnReset);
 
         Button btnDeploy = new Button().setText(Component.literal("§6⚡ 立即部署")); btnDeploy.lss("padding", "3 10");
         btnDeploy.setOnClick(e -> {

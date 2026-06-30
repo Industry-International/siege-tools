@@ -86,6 +86,11 @@ public record C2SVehiclePacket(
         return new C2SVehiclePacket(pos, "reset_ammo", new CompoundTag());
     }
 
+    /** 重置部署台为默认配置 */
+    public static C2SVehiclePacket resetDeployer(BlockPos pos) {
+        return new C2SVehiclePacket(pos, "reset_deployer", new CompoundTag());
+    }
+
     // ========== 处理 ==========
 
     public static void handle(C2SVehiclePacket pkt, IPayloadContext ctx) {
@@ -100,6 +105,7 @@ public record C2SVehiclePacket(
                 case "trigger_deploy" -> handleTriggerDeploy(pkt, level, player);
                 case "toggle_cheat" -> handleToggleCheat(pkt, level, player);
                 case "reset_ammo" -> handleResetAmmo(pkt, level, player);
+                case "reset_deployer" -> handleResetDeployer(pkt, level, player);
                 default -> {}
             }
         });
@@ -138,6 +144,12 @@ public record C2SVehiclePacket(
 
     private static void handleResetAmmo(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof AmmoCrateBlockEntity be)) return;
+        be.resetConfig();
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 已重置为默认配置"), false);
+    }
+
+    private static void handleResetDeployer(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
+        if (!(level.getBlockEntity(pkt.pos) instanceof VehicleDeployerBlockEntity be)) return;
         be.resetConfig();
         player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 已重置为默认配置"), false);
     }

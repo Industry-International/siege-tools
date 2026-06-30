@@ -101,6 +101,13 @@ public record S2CVehiclePacket(
         String nbtJson = com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity.nbtCompoundToJson(d.deployNBT());
         setText(ui, "deployer_deployNBT", nbtJson);
 
+        // 填充简单 NBT 字段（从 deployNBT 提取）
+        var nbt = d.deployNBT();
+        if (nbt.contains("Energy")) setText(ui, "deployer_nbt_energy", String.valueOf(nbt.getInt("Energy")));
+        if (nbt.contains("Health")) setText(ui, "deployer_nbt_health", String.valueOf(nbt.getInt("Health")));
+        if (nbt.contains("Invulnerable")) setText(ui, "deployer_nbt_invul", String.valueOf(nbt.getInt("Invulnerable")));
+        if (nbt.contains("DecoyReady")) setText(ui, "deployer_nbt_decoy", String.valueOf(nbt.getInt("DecoyReady")));
+
         // 恢复下拉菜单位置
         if (pkt.data.contains("category")) {
             String cat = pkt.data.getString("category");

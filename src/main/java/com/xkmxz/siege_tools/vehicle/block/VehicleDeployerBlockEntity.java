@@ -224,6 +224,24 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
         setChanged();
     }
 
+    /** 重置为数据包默认配置 */
+    public void resetConfig() {
+        CompoundTag def = VehicleDataManager.getDefaultDeployerConfig();
+        this.vehicleType = def.contains("vehicleType") ? def.getString("vehicleType") : "";
+        this.respawnDelay = def.contains("respawnDelay") ? def.getInt("respawnDelay") : 600;
+        this.autoRespawn = def.contains("autoRespawn") && def.getBoolean("autoRespawn");
+        this.spawnWithAmmo = !def.contains("spawnWithAmmo") || def.getBoolean("spawnWithAmmo");
+        this.offsetX = def.contains("offsetX") ? def.getDouble("offsetX") : 0.0;
+        this.offsetY = def.contains("offsetY") ? def.getDouble("offsetY") : 1.0;
+        this.offsetZ = def.contains("offsetZ") ? def.getDouble("offsetZ") : 0.0;
+        this.yaw = def.contains("yaw") ? def.getFloat("yaw") : 0.0f;
+        this.pitch = def.contains("pitch") ? def.getFloat("pitch") : 0.0f;
+        this.deployNBT = def.contains("deployNBT") ? new CompoundTag() : new CompoundTag();
+        this.deployedUUID = "";
+        this.cooldownEnd = 0;
+        setChanged();
+    }
+
     // ========== NBT ==========
 
     @Override

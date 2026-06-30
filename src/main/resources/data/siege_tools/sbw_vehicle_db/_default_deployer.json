@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "vehicleType": "",
+  "respawnDelay": 600,
+  "autoRespawn": false,
+  "spawnWithAmmo": true,
+  "offsetX": 0.0,
+  "offsetY": 1.0,
+  "offsetZ": 0.0,
+  "yaw": 0.0,
+  "pitch": 0.0,
+  "deployNBT": "{}"
+}

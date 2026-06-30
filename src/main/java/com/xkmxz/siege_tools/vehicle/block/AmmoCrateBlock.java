@@ -46,6 +46,31 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         return (BlockEntityTicker<T>) createTickerHelper(type, ModBlockEntities.AMMO_STATION.get(), AmmoCrateBlockEntity::tick);
     }
 
+    // 弹药分类定义（参照 KubeJS 布局分组）
+    private static final class AmmoCat {
+        final String tabName, sectionTitle;
+        final List<String> keys;
+        AmmoCat(String tabName, String sectionTitle, List<String> keys) {
+            this.tabName = tabName; this.sectionTitle = sectionTitle; this.keys = keys;
+        }
+    }
+    private static final List<AmmoCat> AMMO_CATEGORIES = List.of(
+        new AmmoCat("炮弹",    "大口径炮弹",
+            List.of("large_shell_ap", "large_shell_he", "large_shell_gs", "mortar_shell")),
+        new AmmoCat("小口径",  "小口径机炮弹",
+            List.of("small_shell_ap", "small_shell_he", "small_shell_gs", "small_shell_aa")),
+        new AmmoCat("枪/火箭", "枪弹/火箭弹",
+            List.of("rifle_ammo", "heavy_ammo", "small_rocket", "rocket")),
+        new AmmoCat("导弹/航弹", "导弹/航弹",
+            List.of("missile", "medium_anti_ground_missile", "large_anti_ground_missile",
+                    "medium_anti_air_missile", "medium_aerial_bomb", "small_aerial_bomb")),
+        new AmmoCat("§aMCSP(上)", "坦克炮/导弹",
+            List.of("mcsp_125mm_ap", "mcsp_125mm_he", "mcsp_120mm_bulletmortar", "mcsp_tow_2", "mcsp_mlrs_shells")),
+        new AmmoCat("§aMCSP(下)", "机关炮/机枪",
+            List.of("mcsp_25mm_ap", "mcsp_30mm_ap", "mcsp_40mm_explosive", "mcsp_40mm_smoke",
+                    "mcsp_bullet762", "mcsp_smallarmscartridge"))
+    );
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
@@ -78,12 +103,20 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
 
         // ── 从数据库读取弹药类型 ──
         var ammoReg = VehicleDataManager.getAmmoTypes();
+        // ── 按弹药分类收集弹药短名 ──
         var ammoShortNames = new ArrayList<String>();
         var ammoDisplayMap = new LinkedHashMap<String, String>();
-        if (ammoReg != null && ammoReg.isLoaded()) {
-            for (String sn : ammoReg.getAllShortNames()) {
-                var info = ammoReg.getAmmoType(sn);
-                if (info != null) { ammoShortNames.add(sn); ammoDisplayMap.put(sn, "§f" + info.displayName()); }
+        var ammoCatMap = new LinkedHashMap<String, String>(); // key → category tab name
+        for (var ac : AMMO_CATEGORIES) {
+            for (var key : ac.keys) {
+                ammoShortNames.add(key);
+                String display = "§f" + key;
+                if (ammoReg != null) {
+                    var info = ammoReg.getAmmoType(key);
+                    if (info != null) display = "§f" + info.displayName();
+                }
+                ammoDisplayMap.put(key, display);
+                ammoCatMap.put(key, ac.tabName);
             }
         }
 
@@ -100,7 +133,8 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
             slotFields.put(sn, f);
         }
 
-        UIElement root = new UIElement(); root.lss("width", 270).lss("padding", 6);
+        // 紧凑布局
+        UIElement root = new UIElement(); root.lss("width", 250).lss("padding", 5);
         var title = new Label().setText(Component.literal("§6╔══ 弹药补给站配置 ══╗"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
@@ -109,7 +143,8 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
 
         TabView tv = new TabView();
 
-        UIElement p1 = new UIElement(); p1.lss("padding", 4);
+        // Tab 1: 基础
+        UIElement p1 = new UIElement(); p1.lss("padding", 3);
         addRow(p1, "§7扫描范围:", fieldScan, " §7格");
         addGap(p1); addRow(p1, "§7冷却时间:", fieldCool, " §7秒");
         addGap(p1); addRow(p1, "§7驶入等待:", fieldEnter, " §7秒");
@@ -117,21 +152,20 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         p1.addChild(new Label().setText(Component.literal("§8← 切换标签页配置弹药")));
         tv.addTab(new Tab().setText("基础"), p1);
 
-        int perPage = 4;
-        int total = ammoShortNames.size();
-        for (int pi = 0; pi < total; pi += perPage) {
-            int end = Math.min(pi + perPage, total);
-            UIElement page = new UIElement(); page.lss("padding", 4);
-            page.addChild(new Label().setText(Component.literal("§e── 弹药配置 ──")));
-            for (int i = pi; i < end; i++) {
-                String sn = ammoShortNames.get(i);
-                addRow(page, ammoDisplayMap.get(sn) + ":", slotFields.get(sn), " 个");
+        // 弹药分类页签（按 AMMO_CATEGORIES 分组）
+        for (var ac : AMMO_CATEGORIES) {
+            UIElement page = new UIElement(); page.lss("padding", 3);
+            page.addChild(new Label().setText(Component.literal("§e── " + ac.sectionTitle + " ──")));
+            for (var key : ac.keys) {
+                if (ammoDisplayMap.containsKey(key)) {
+                    addRow(page, ammoDisplayMap.get(key) + ":", slotFields.get(key), " 个");
+                }
             }
-            tv.addTab(new Tab().setText("弹药" + ((pi/perPage)+1)), page);
+            tv.addTab(new Tab().setText(ac.tabName), page);
         }
 
-        // 作弊
-        UIElement cp = new UIElement(); cp.lss("padding", 4);
+        // 作弊页
+        UIElement cp = new UIElement(); cp.lss("padding", 3);
         cp.addChild(new Label().setText(Component.literal("§c── 作弊功能 ──")));
         if (holder.player.hasPermissions(2)) {
             addGap(cp);
@@ -150,7 +184,6 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存配置")); btnSave.lss("padding", "3 10");
         btnSave.setOnClick(e -> {
-            // 客户端读取当前字段值
             java.util.Map<String, Integer> slotsMap = new java.util.HashMap<>();
             for (String sn : ammoShortNames) {
                 try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) slotsMap.put(sn, v); } catch (Exception ex) { }
