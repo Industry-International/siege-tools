@@ -1,0 +1,112 @@
+{
+  "vehicleId": "superbwarfare:type_63",
+  "mod": "superbwarfare",
+  "category": "artillery",
+  "baseName": "type_63",
+  "displayType": "Artillery",
+  "maxHealth": 100,
+  "maxEnergy": 10000000,
+  "hasDecoy": false,
+  "engineType": null,
+  "mass": 0.45,
+  "upStep": 0,
+  "containerType": "Special",
+  "hudType": null,
+  "parts": [
+    "Turret",
+    "MainEngine"
+  ],
+  "seatCount": 0,
+  "weapons": [
+    {
+      "key": "Main",
+      "displayKey": "Main",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "AP",
+      "displayKey": "AP",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": 500,
+      "hasOverride": false
+    },
+    {
+      "key": "HE",
+      "displayKey": "HE",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": 200,
+      "hasOverride": false
+    },
+    {
+      "key": "CM",
+      "displayKey": "CM",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": 300,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 10000000,
+    "Health": 100,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "MainEngineHealth": 150,
+    "MainEngineDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Main": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "AP": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "HE": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "CM": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "ammoSlots": {}
+}

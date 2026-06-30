@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "siege_tools:block/vehicle_deployer" }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "version": 2,
+  "_comment": "SBW 载具数据库注册文件 — 在此声明允许使用的分类目录。每个分类下的 files 列表供 KubeJS 自动加载器读取。添加新分类只需在此注册并创建同名目录即可。",
+  "categories": {
+    "air_defense": {
+      "enabled": true,
+      "displayName": "防空单位",
+      "description": "Air Defense Units",
+      "files": [
+        "superbwarfare--lav_ad.json"
+      ]
+    },
+    "aircraft": {
+      "enabled": true,
+      "displayName": "固定翼飞机",
+      "description": "Fixed-wing Aircraft",
+      "files": [
+        "superbwarfare--a_10a.json",
+        "superbwarfare--ju_87.json",
+        "superbwarfare--kv_16.json",
+        "superbwarfare--tom_6.json"
+      ]
+    },
+    "artillery": {
+      "enabled": true,
+      "displayName": "火炮/火箭炮",
+      "description": "Artillery & Rocket Artillery",
+      "files": [
+        "superbwarfare--annihilator.json",
+        "superbwarfare--bl_132.json",
+        "superbwarfare--mk_42.json",
+        "superbwarfare--mle_1934.json",
+        "superbwarfare--mortar.json",
+        "superbwarfare--type_63.json",
+        "mcsp--tos_1a_green.json",
+        "mcsp--tos_1a_tricolor.json"
+      ]
+    },
+    "defense_turret": {
+      "enabled": true,
+      "displayName": "固定防御",
+      "description": "Fixed Defense Turrets",
+      "files": [
+        "superbwarfare--hpj_11.json",
+        "superbwarfare--laser_tower.json",
+        "superbwarfare--tow.json",
+        "superbwarfare--waveforce_tower.json"
+      ]
+    },
+    "drone": {
+      "enabled": true,
+      "displayName": "无人机",
+      "description": "Drones",
+      "files": [
+        "superbwarfare--drone.json"
+      ]
+    },
+    "helicopter": {
+      "enabled": true,
+      "displayName": "直升机",
+      "description": "Helicopters",
+      "files": [
+        "superbwarfare--ah_6.json",
+        "superbwarfare--mi_28.json"
+      ]
+    },
+    "infantry_fighting_vehicle": {
+      "enabled": true,
+      "displayName": "步兵战车/装甲车",
+      "description": "Infantry Fighting Vehicles & APCs",
+      "files": [
+        "superbwarfare--bmp_2.json",
+        "superbwarfare--bradley.json",
+        "superbwarfare--lav_150.json",
+        "superbwarfare--lav_25.json",
+        "mcsp--bmd_4.json",
+        "mcsp--bmd_4_camo.json",
+        "mcsp--m3a3_bradley.json",
+        "mcsp--m3a3_bradley_busk_ii.json",
+        "mcsp--m3a3_bradley_busk_iii.json",
+        "mcsp--m3a3_bradley_busk_iii_sand.json",
+        "mcsp--m3a3_bradley_busk_ii_sand.json",
+        "mcsp--m3a3_bradley_sand.json",
+        "mcsp--zbd04a_green.json",
+        "mcsp--zbd04a_sand.json"
+      ]
+    },
+    "main_battle_tank": {
+      "enabled": true,
+      "displayName": "主战坦克",
+      "description": "Main Battle Tanks",
+      "files": [
+        "superbwarfare--m_1a_2.json",
+        "superbwarfare--plz_05.json",
+        "superbwarfare--prism_tank.json",
+        "superbwarfare--t_90a.json",
+        "superbwarfare--yx_100.json",
+        "superbwarfare--ztz_99a.json",
+        "mcsp--m1a2.json",
+        "mcsp--m1a2_sand.json",
+        "mcsp--m1a2_sep.json",
+        "mcsp--m1a2_sep_sand.json",
+        "mcsp--sprut.json",
+        "mcsp--sprut_camo.json",
+        "mcsp--t80bv_camo.json",
+        "mcsp--t80bv_green.json",
+        "mcsp--t80bv_kantemir.json",
+        "mcsp--t80bv_pixel.json",
+        "mcsp--t80u_camo.json",
+        "mcsp--t80u_green.json",
+        "mcsp--t80u_kantemir.json",
+        "mcsp--t80u_pixel.json",
+        "mcsp--t90a_green.json",
+        "mcsp--t90a_tricolor.json",
+        "mcsp--ztz99a_sand.json"
+      ]
+    },
+    "naval": {
+      "enabled": true,
+      "displayName": "水上载具",
+      "description": "Naval Vehicles",
+      "files": [
+        "superbwarfare--speedboat.json",
+        "superbwarfare--tiny_speedboat.json"
+      ]
+    },
+    "utility_vehicle": {
+      "enabled": true,
+      "displayName": "多功能车/运输车",
+      "description": "Utility Vehicles & Trucks",
+      "files": [
+        "superbwarfare--sodayo_pick_up.json",
+        "superbwarfare--sodayo_pick_up_hmg.json",
+        "superbwarfare--sodayo_pick_up_rocket.json",
+        "superbwarfare--sodayo_pick_up_tow.json",
+        "superbwarfare--truck.json",
+        "superbwarfare--wheel_chair.json",
+        "mcsp--humvee_carc.json",
+        "mcsp--humvee_mk19.json",
+        "mcsp--humvee_sand.json",
+        "mcsp--humvee_standart_camo.json",
+        "mcsp--typhoon_30.json",
+        "mcsp--typhoon_tricolor_30.json",
+        "mcsp--ural_green.json",
+        "mcsp--ural_tricolor.json"
+      ]
+    }
+  }
+}

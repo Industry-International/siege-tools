@@ -7,5 +7,10 @@
   "message.siege_tools.ammo_kit.full": "§e[弹药包] 弹药已满，无需补充！",
   "message.siege_tools.ammo_kit.wrong_team": "§c[弹药包] 不同队伍，无法补给！",
   "message.siege_tools.ammo_kit.hint": "§7潜行+右键放置弹药箱，或右键队友直接补给",
-  "message.siege_tools.ammo_kit.area_refilled": "§a[弹药箱] 收到附近弹药箱的补给！"
+  "message.siege_tools.ammo_kit.area_refilled": "§a[弹药箱] 收到附近弹药箱的补给！",
+
+  "block.siege_tools.ammo_station": "弹药补给站",
+  "block.siege_tools.vehicle_deployer": "载具部署台",
+  "container.siege_tools.ammo_station": "弹药补给站配置",
+  "container.siege_tools.vehicle_deployer": "载具部署台配置"
 }

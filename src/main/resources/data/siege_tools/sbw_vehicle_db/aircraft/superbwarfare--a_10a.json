@@ -1,0 +1,148 @@
+{
+  "vehicleId": "superbwarfare:a_10a",
+  "mod": "superbwarfare",
+  "category": "aircraft",
+  "baseName": "a_10a",
+  "displayType": "Airplane",
+  "maxHealth": 350,
+  "maxEnergy": 10000000,
+  "hasDecoy": true,
+  "engineType": "Aircraft",
+  "mass": 20,
+  "upStep": 1.1,
+  "containerType": "Small",
+  "hudType": "@Aircraft",
+  "parts": [
+    "MainEngine",
+    "SubEngine"
+  ],
+  "seatCount": 0,
+  "weapons": [
+    {
+      "key": "Cannon",
+      "displayKey": "Cannon",
+      "ammoTypes": [
+        "superbwarfare:small_shell_ap"
+      ],
+      "magazine": 1,
+      "rpm": 1200,
+      "damage": 35,
+      "hasOverride": false
+    },
+    {
+      "key": "Rocket",
+      "displayKey": "Rocket",
+      "ammoTypes": [
+        "superbwarfare:small_rocket"
+      ],
+      "magazine": 28,
+      "rpm": 450,
+      "damage": 80,
+      "hasOverride": false
+    },
+    {
+      "key": "Bomb",
+      "displayKey": "Bomb",
+      "ammoTypes": [
+        "superbwarfare:medium_aerial_bomb"
+      ],
+      "magazine": 3,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "Missile",
+      "displayKey": "Missile",
+      "ammoTypes": [
+        "superbwarfare:large_anti_ground_missile",
+        "superbwarfare:large_anti_ground_missile"
+      ],
+      "magazine": 4,
+      "rpm": null,
+      "damage": 1100,
+      "hasOverride": true
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 10000000,
+    "Health": 350,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "MainEngineHealth": 150,
+    "MainEngineDamaged": 0,
+    "SubEngineHealth": 150,
+    "SubEngineDamaged": 0,
+    "WeaponState": {
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Rocket": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Bomb": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Missile": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "superbwarfare:small_shell_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 16,
+          "id": "superbwarfare:small_rocket"
+        },
+        {
+          "Slot": 2,
+          "count": 8,
+          "id": "superbwarfare:medium_aerial_bomb"
+        },
+        {
+          "Slot": 3,
+          "count": 16,
+          "id": "superbwarfare:large_anti_ground_missile"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:small_shell_ap": 32,
+    "superbwarfare:small_rocket": 16,
+    "superbwarfare:medium_aerial_bomb": 8,
+    "superbwarfare:large_anti_ground_missile": 16
+  }
+}

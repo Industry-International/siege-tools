@@ -1,0 +1,101 @@
+{
+  "vehicleId": "mcsp:humvee_mk19",
+  "mod": "mcsp",
+  "category": "utility_vehicle",
+  "baseName": "humvee_mk19",
+  "displayType": "Car",
+  "maxHealth": 150,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Wheel",
+  "mass": 4.5,
+  "upStep": 1.5,
+  "containerType": "Medium",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "Turret"
+  ],
+  "seatCount": 4,
+  "weapons": [
+    {
+      "key": "GrenadeLauncher",
+      "displayKey": "GrenadeLauncher",
+      "ammoTypes": [
+        "mcsp:40mm_explosive"
+      ],
+      "magazine": 1,
+      "rpm": 250,
+      "damage": 30,
+      "hasOverride": false
+    },
+    {
+      "key": "JavelinMissile",
+      "displayKey": "JavelinMissile",
+      "ammoTypes": [
+        "mcsp:tow_2",
+        "mcsp:tow_2"
+      ],
+      "magazine": 1,
+      "rpm": 12,
+      "damage": 500,
+      "hasOverride": true
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 150,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "GrenadeLauncher": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "JavelinMissile": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 64,
+          "id": "mcsp:40mm_explosive"
+        },
+        {
+          "Slot": 1,
+          "count": 16,
+          "id": "mcsp:tow_2"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "mcsp:40mm_explosive": 64,
+    "mcsp:tow_2": 16
+  }
+}

@@ -4,7 +4,9 @@ import com.mojang.logging.LogUtils;
 import com.xkmxz.siege_tools.entity.AmmoKitEntity;
 import com.xkmxz.siege_tools.item.AmmoKitItem;
 import com.xkmxz.siege_tools.client.AmmoKitRenderer;
-import net.minecraft.client.Minecraft;
+import com.xkmxz.siege_tools.vehicle.registry.ModBlocks;
+import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
+import com.xkmxz.siege_tools.vehicle.registry.ModMenuTypes;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -25,9 +27,12 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
+
+import com.xkmxz.siege_tools.vehicle.network.VehicleSystemNetworking;
 
 @Mod(siege_tools.MODID)
 public class siege_tools {
@@ -63,16 +68,27 @@ public class siege_tools {
                     .icon(() -> AMMO_KIT_ITEM.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
                         output.accept(AMMO_KIT_ITEM.get());
+                        // 新增：弹药补给站和载具部署台
+                        output.accept(ModBlocks.AMMO_STATION.get());
+                        output.accept(ModBlocks.VEHICLE_DEPLOYER.get());
                     })
                     .build());
 
     public siege_tools(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
 
-        // 注册 Deferred Registers
+        // 注册原有 Deferred Registers
         ITEMS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+
+        // ===== 新增：载具系统注册 =====
+        ModBlocks.BLOCKS.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        ModMenuTypes.MENUS.register(modEventBus);
+
+        // 注册网络包（NeoForge Payload 系统）
+        modEventBus.addListener(VehicleSystemNetworking::register);
 
         NeoForge.EVENT_BUS.register(this);
 
@@ -87,9 +103,13 @@ public class siege_tools {
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // 将弹药补给包添加到战斗标签页
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(AMMO_KIT_ITEM.get());
+        }
+        // 将新方块添加到对应标签页
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(ModBlocks.AMMO_STATION.get());
+            event.accept(ModBlocks.VEHICLE_DEPLOYER.get());
         }
     }
 

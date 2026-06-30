@@ -7,5 +7,10 @@
   "message.siege_tools.ammo_kit.full": "§e[Ammo Kit] Ammunition is already full!",
   "message.siege_tools.ammo_kit.wrong_team": "§c[Ammo Kit] Cannot refill: different team!",
   "message.siege_tools.ammo_kit.hint": "§7Sneak + Right-click to deploy, or right-click a teammate to refill",
-  "message.siege_tools.ammo_kit.area_refilled": "§a[Ammo Kit] Received ammunition from nearby ammo crate!"
+  "message.siege_tools.ammo_kit.area_refilled": "§a[Ammo Kit] Received ammunition from nearby ammo crate!",
+
+  "block.siege_tools.ammo_station": "Ammo Station",
+  "block.siege_tools.vehicle_deployer": "Vehicle Deployer",
+  "container.siege_tools.ammo_station": "Ammo Station Config",
+  "container.siege_tools.vehicle_deployer": "Vehicle Deployer Config"
 }

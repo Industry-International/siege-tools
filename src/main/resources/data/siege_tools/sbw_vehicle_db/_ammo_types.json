@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "_comment": "弹药类型注册表 — 补给站和数据库共享。所有可被弹药补给站识别的弹药类型在此注册。",
+  "ammoTypes": {
+    "large_shell_ap": {
+      "id": "superbwarfare:large_shell_ap",
+      "displayName": "§6大口径AP弹",
+      "enName": "Large AP Shell",
+      "maxStack": 64
+    },
+    "large_shell_he": {
+      "id": "superbwarfare:large_shell_he",
+      "displayName": "§c大口径HE弹",
+      "enName": "Large HE Shell",
+      "maxStack": 64
+    },
+    "large_shell_gs": {
+      "id": "superbwarfare:large_shell_gs",
+      "displayName": "§a大口径葡萄弹",
+      "enName": "Large Grapeshot Shell",
+      "maxStack": 64
+    },
+    "small_shell_ap": {
+      "id": "superbwarfare:small_shell_ap",
+      "displayName": "§b小口径AP弹",
+      "enName": "Small AP Shell",
+      "maxStack": 64
+    },
+    "small_shell_he": {
+      "id": "superbwarfare:small_shell_he",
+      "displayName": "§d小口径HE弹",
+      "enName": "Small HE Shell",
+      "maxStack": 64
+    },
+    "small_shell_gs": {
+      "id": "superbwarfare:small_shell_gs",
+      "displayName": "§a小口径葡萄弹",
+      "enName": "Small Grapeshot Shell",
+      "maxStack": 64
+    },
+    "small_shell_aa": {
+      "id": "superbwarfare:small_shell_aa",
+      "displayName": "§b小口径防空弹",
+      "enName": "Small AA Shell",
+      "maxStack": 64
+    },
+    "rifle_ammo": {
+      "id": "superbwarfare:rifle_ammo",
+      "displayName": "§7步枪弹",
+      "enName": "Rifle Ammo",
+      "maxStack": 64
+    },
+    "heavy_ammo": {
+      "id": "superbwarfare:heavy_ammo",
+      "displayName": "§9重弹",
+      "enName": "Heavy Ammo",
+      "maxStack": 64
+    },
+    "missile": {
+      "id": "superbwarfare:missile",
+      "displayName": "§a导弹",
+      "enName": "Missile",
+      "maxStack": 8
+    },
+    "rocket": {
+      "id": "superbwarfare:rocket",
+      "displayName": "§e火箭弹",
+      "enName": "Rocket",
+      "maxStack": 16
+    },
+    "small_rocket": {
+      "id": "superbwarfare:small_rocket",
+      "displayName": "§e小型火箭弹",
+      "enName": "Small Rocket",
+      "maxStack": 32
+    },
+    "medium_anti_ground_missile": {
+      "id": "superbwarfare:medium_anti_ground_missile",
+      "displayName": "§a中型对地导弹",
+      "enName": "Medium Anti-Ground Missile",
+      "maxStack": 8
+    },
+    "large_anti_ground_missile": {
+      "id": "superbwarfare:large_anti_ground_missile",
+      "displayName": "§a大型对地导弹",
+      "enName": "Large Anti-Ground Missile",
+      "maxStack": 8
+    },
+    "medium_anti_air_missile": {
+      "id": "superbwarfare:medium_anti_air_missile",
+      "displayName": "§a中型防空导弹",
+      "enName": "Medium Anti-Air Missile",
+      "maxStack": 8
+    },
+    "mortar_shell": {
+      "id": "superbwarfare:mortar_shell",
+      "displayName": "§6迫击炮弹",
+      "enName": "Mortar Shell",
+      "maxStack": 32
+    },
+    "medium_aerial_bomb": {
+      "id": "superbwarfare:medium_aerial_bomb",
+      "displayName": "§c中型航弹",
+      "enName": "Medium Aerial Bomb",
+      "maxStack": 8
+    },
+    "small_aerial_bomb": {
+      "id": "superbwarfare:small_aerial_bomb",
+      "displayName": "§c小型航弹",
+      "enName": "Small Aerial Bomb",
+      "maxStack": 8
+    },
+    "mcsp_25mm_ap": {
+      "id": "mcsp:25mm_ap",
+      "displayName": "§b25mm机炮弹",
+      "enName": "25mm AP Round",
+      "maxStack": 64
+    },
+    "mcsp_30mm_ap": {
+      "id": "mcsp:30mm_ap",
+      "displayName": "§d30mm机炮弹",
+      "enName": "30mm AP Round",
+      "maxStack": 64
+    },
+    "mcsp_40mm_explosive": {
+      "id": "mcsp:40mm_explosive",
+      "displayName": "§c40mm高爆弹",
+      "enName": "40mm Explosive",
+      "maxStack": 64
+    },
+    "mcsp_40mm_smoke": {
+      "id": "mcsp:40mm_smoke",
+      "displayName": "§740mm烟雾弹",
+      "enName": "40mm Smoke",
+      "maxStack": 32
+    },
+    "mcsp_120mm_bulletmortar": {
+      "id": "mcsp:120mm_bulletmortar",
+      "displayName": "§5120mm迫击炮",
+      "enName": "120mm Bullet Mortar",
+      "maxStack": 32
+    },
+    "mcsp_125mm_ap": {
+      "id": "mcsp:125mm_ap",
+      "displayName": "§6125mm穿甲弹",
+      "enName": "125mm AP Shell",
+      "maxStack": 32
+    },
+    "mcsp_125mm_he": {
+      "id": "mcsp:125mm_he",
+      "displayName": "§c125mm高爆弹",
+      "enName": "125mm HE Shell",
+      "maxStack": 32
+    },
+    "mcsp_bullet762": {
+      "id": "mcsp:bullet762",
+      "displayName": "§77.62mm机枪弹",
+      "enName": "7.62mm MG Ammo",
+      "maxStack": 64
+    },
+    "mcsp_smallarmscartridge": {
+      "id": "mcsp:smallarmscartridge",
+      "displayName": "§7小口径弹药",
+      "enName": "Small Arms Cartridge",
+      "maxStack": 64
+    },
+    "mcsp_tow_2": {
+      "id": "mcsp:tow_2",
+      "displayName": "§aTOW-2导弹",
+      "enName": "TOW-2 Missile",
+      "maxStack": 16
+    },
+    "mcsp_mlrs_shells": {
+      "id": "mcsp:mlrs_shells",
+      "displayName": "§eMLRS火箭弹",
+      "enName": "MLRS Rocket",
+      "maxStack": 32
+    }
+  }
+}

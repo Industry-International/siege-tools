@@ -1,0 +1,100 @@
+{
+  "vehicleId": "mcsp:typhoon_30",
+  "mod": "mcsp",
+  "category": "utility_vehicle",
+  "baseName": "typhoon_30",
+  "displayType": "Car",
+  "maxHealth": 270,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Wheel",
+  "mass": 15,
+  "upStep": 1.5,
+  "containerType": "Medium",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "Turret"
+  ],
+  "seatCount": 6,
+  "weapons": [
+    {
+      "key": "Cannon",
+      "displayKey": "Cannon",
+      "ammoTypes": [
+        "mcsp:30mm_ap"
+      ],
+      "magazine": 1,
+      "rpm": 240,
+      "damage": 35,
+      "hasOverride": false
+    },
+    {
+      "key": "MainMachineGun",
+      "displayKey": "MainMachineGun",
+      "ammoTypes": [
+        "mcsp:bullet762"
+      ],
+      "magazine": 1,
+      "rpm": 650,
+      "damage": 9.5,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 270,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MainMachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 128,
+          "id": "mcsp:30mm_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 256,
+          "id": "mcsp:bullet762"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "mcsp:30mm_ap": 128,
+    "mcsp:bullet762": 256
+  }
+}
