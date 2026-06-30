@@ -376,7 +376,7 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return new com.xkmxz.siege_tools.vehicle.gui.AmmoStationMenu(containerId, playerInv, this);
+        return null; // UI handled by KubeJS via KJSBlockUIMenuType
     }
 
     // ========== JSON 序列化 ==========

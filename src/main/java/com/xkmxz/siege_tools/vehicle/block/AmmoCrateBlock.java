@@ -56,11 +56,9 @@ public class AmmoCrateBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof AmmoCrateBlockEntity station) {
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(station);
-            }
+        if (player instanceof ServerPlayer serverPlayer) {
+            com.lowdragmc.lowdraglib2.integration.kjs.ui.KJSBlockUIMenuType.openUI(
+                    serverPlayer, pos, "kubejs:ammo_station_cfg");
         }
         return InteractionResult.SUCCESS;
     }

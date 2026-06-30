@@ -56,11 +56,9 @@ public class VehicleDeployerBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof VehicleDeployerBlockEntity deployer) {
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(deployer);
-            }
+        if (player instanceof ServerPlayer serverPlayer) {
+            com.lowdragmc.lowdraglib2.integration.kjs.ui.KJSBlockUIMenuType.openUI(
+                    serverPlayer, pos, "kubejs:vehicle_deployer_cfg");
         }
         return InteractionResult.SUCCESS;
     }
