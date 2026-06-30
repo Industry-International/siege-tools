@@ -80,7 +80,7 @@ public class AmmoStationScreen extends AbstractContainerScreen<AmmoStationMenu> 
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        // renderBackground is called by Screen.render() before renderBg()
         int l = leftPos, t = topPos;
 
         // 背景

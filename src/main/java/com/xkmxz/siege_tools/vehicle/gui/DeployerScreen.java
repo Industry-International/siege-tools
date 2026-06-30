@@ -123,7 +123,7 @@ public class DeployerScreen extends AbstractContainerScreen<DeployerMenu> {
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mx, int my) {
-        renderBackground(graphics, mx, my, partialTick);
+        // renderBackground is called by Screen.render() before renderBg()
         int l = leftPos, t = topPos;
         graphics.blit(BG, l, t, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT * 2);
 
