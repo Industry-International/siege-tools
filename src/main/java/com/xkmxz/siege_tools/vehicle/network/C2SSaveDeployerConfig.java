@@ -1,8 +1,12 @@
 package com.xkmxz.siege_tools.vehicle.network;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.xkmxz.siege_tools.siege_tools;
 import com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity;
+import com.xkmxz.siege_tools.vehicle.util.JsonToNBTConverter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -75,7 +79,16 @@ public record C2SSaveDeployerConfig(
                 deployer.setAutoRespawn(payload.autoRespawn);
                 deployer.setSpawnWithAmmo(payload.spawnWithAmmo);
                 deployer.setOffsets(payload.offsetX, payload.offsetY, payload.offsetZ, payload.yaw, payload.pitch);
-                deployer.setDeployNBT(payload.deployNBT != null ? payload.deployNBT : "{}");
+                // 将网络包中的 JSON 字符串解析为 CompoundTag 再存入 BE
+                String nbtStr = payload.deployNBT != null ? payload.deployNBT : "{}";
+                CompoundTag parsedNBT;
+                try {
+                    JsonObject obj = new Gson().fromJson(nbtStr, JsonObject.class);
+                    parsedNBT = (obj != null) ? JsonToNBTConverter.toCompoundTag(obj) : new CompoundTag();
+                } catch (Exception e) {
+                    parsedNBT = new CompoundTag();
+                }
+                deployer.setDeployNBT(parsedNBT);
                 player.displayClientMessage(
                         net.minecraft.network.chat.Component.literal("§a✔ 配置已保存！"), false);
             }

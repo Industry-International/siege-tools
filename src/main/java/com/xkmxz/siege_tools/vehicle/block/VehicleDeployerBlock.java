@@ -68,7 +68,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         boolean spawnWithAmmo = be.isSpawnWithAmmo();
         double ox = be.getOffsetX(), oy = be.getOffsetY(), oz = be.getOffsetZ();
         float yaw = be.getYaw(), pitch = be.getPitch();
-        String deployNBT = be.getDeployNBT();
+        String deployNBT = be.getDeployNBTAsJson();
 
         TextField fieldVtype = new TextField().setText(vehicleType); fieldVtype.lss("width", 180);
         TextField fieldDelay = new TextField().setNumbersOnlyInt(20, 72000).setText(String.valueOf(respawnDelay)); fieldDelay.lss("width", 55);

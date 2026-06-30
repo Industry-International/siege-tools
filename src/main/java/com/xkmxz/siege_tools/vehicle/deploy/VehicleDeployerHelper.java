@@ -1,7 +1,5 @@
 package com.xkmxz.siege_tools.vehicle.deploy;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.xkmxz.siege_tools.vehicle.block.VehicleDeployerBlockEntity;
@@ -25,7 +23,6 @@ import java.util.UUID;
 public class VehicleDeployerHelper {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Gson GSON = new Gson();
 
     /** 生成部署位置标签（用于实体反查方块） */
     public static String makeDeployTag(BlockPos pos) {
@@ -96,18 +93,11 @@ public class VehicleDeployerHelper {
         }
         nbt.put("Tags", tagsList);
 
-        // 叠加用户 deployNBT
-        String deployNBTStr = be.getDeployNBT();
-        if (deployNBTStr != null && !deployNBTStr.isEmpty() && !"{}".equals(deployNBTStr)) {
-            try {
-                JsonObject deployObj = GSON.fromJson(deployNBTStr, JsonObject.class);
-                if (deployObj != null) {
-                    JsonToNBTConverter.mergeDeployNBT(nbt, deployObj);
-                    LOGGER.info("[Deploy] 合并用户 deployNBT");
-                }
-            } catch (Exception e) {
-                LOGGER.warn("[Deploy] deployNBT JSON 解析失败: {}", e.getMessage());
-            }
+        // 叠加用户 deployNBT（直接合并 CompoundTag）
+        CompoundTag deployNBT = be.getDeployNBT();
+        if (deployNBT != null && !deployNBT.isEmpty()) {
+            mergeCompoundTag(nbt, deployNBT);
+            LOGGER.info("[Deploy] 合并用户 deployNBT");
         }
 
         // spawnWithAmmo = 0 时清除 Inventory
@@ -153,5 +143,26 @@ public class VehicleDeployerHelper {
             }
         }
         LOGGER.warn("[Deploy] 部署后未找到标签匹配的实体 @[{},{},{}]", pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /**
+     * 将 source 中的所有键递归合并到 target 的 CompoundTag 中。
+     * 对于同为 CompoundTag 的子节点做深度合并，否则直接覆盖。
+     */
+    private static void mergeCompoundTag(CompoundTag target, CompoundTag source) {
+        if (source == null || source.isEmpty()) return;
+        for (String key : source.getAllKeys()) {
+            Tag incoming = source.get(key);
+            if (incoming == null) continue;
+            if (target.contains(key) && target.get(key) instanceof CompoundTag existing
+                    && incoming instanceof CompoundTag incomingCompound) {
+                // 递归合并子对象
+                for (String subKey : incomingCompound.getAllKeys()) {
+                    existing.put(subKey, incomingCompound.get(subKey));
+                }
+            } else {
+                target.put(key, incoming);
+            }
+        }
     }
 }

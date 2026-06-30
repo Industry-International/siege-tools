@@ -1,6 +1,5 @@
 package com.xkmxz.siege_tools.vehicle.block;
 
-import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
@@ -32,7 +31,6 @@ import java.util.*;
 public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Gson GSON = new Gson();
     private static final String LOG_PREFIX = "[弹药补给站]";
 
     // === 配置 ===
@@ -338,30 +336,53 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     public boolean isCheatMode() { return cheatMode; }
     public void setCheatMode(boolean cheatMode) { this.cheatMode = cheatMode; setChanged(); }
 
-    // ========== NBT 持久化 ==========
+    // ========== NBT 持久化（纯 NBT 格式，无 JSON 字符串） ==========
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putString("StationConfig", configToJson());
-        tag.putLong("CooldownEnd", cooldownEnd);
-        tag.putString("VehicleTimers", timersToJson());
-        tag.putBoolean("CheatMode", cheatMode);
+        tag.putInt("scanRange", scanRange);
+        tag.putInt("cooldown", cooldownSec);
+        tag.putInt("enterDelay", enterDelay);
+        // slots: { "ammo_short_name": count, ... }
+        CompoundTag slotsTag = new CompoundTag();
+        for (Map.Entry<String, Integer> entry : slots.entrySet()) {
+            slotsTag.putInt(entry.getKey(), entry.getValue());
+        }
+        tag.put("slots", slotsTag);
+        tag.putLong("cooldownEnd", cooldownEnd);
+        // vehicleTimers: { "UUID": gameTime, ... }
+        CompoundTag timersTag = new CompoundTag();
+        for (Map.Entry<String, Long> entry : vehicleTimers.entrySet()) {
+            timersTag.putLong(entry.getKey(), entry.getValue());
+        }
+        tag.put("vehicleTimers", timersTag);
+        tag.putBoolean("cheatMode", cheatMode);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        String configStr = tag.getString("StationConfig");
-        if (configStr != null && !configStr.isEmpty()) {
-            loadConfigFromJson(configStr);
+        scanRange = tag.contains("scanRange") ? tag.getInt("scanRange") : 12;
+        cooldownSec = tag.contains("cooldown") ? tag.getInt("cooldown") : 5;
+        enterDelay = tag.contains("enterDelay") ? tag.getInt("enterDelay") : 3;
+        if (tag.contains("slots", Tag.TAG_COMPOUND)) {
+            CompoundTag slotsTag = tag.getCompound("slots");
+            Map<String, Integer> loaded = new HashMap<>();
+            for (String key : slotsTag.getAllKeys()) {
+                loaded.put(key, slotsTag.getInt(key));
+            }
+            slots = loaded;
         }
-        cooldownEnd = tag.getLong("CooldownEnd");
-        String timersStr = tag.getString("VehicleTimers");
-        if (timersStr != null && !timersStr.isEmpty()) {
-            loadTimersFromJson(timersStr);
+        cooldownEnd = tag.getLong("cooldownEnd");
+        if (tag.contains("vehicleTimers", Tag.TAG_COMPOUND)) {
+            CompoundTag timersTag = tag.getCompound("vehicleTimers");
+            vehicleTimers.clear();
+            for (String key : timersTag.getAllKeys()) {
+                vehicleTimers.put(key, timersTag.getLong(key));
+            }
         }
-        cheatMode = tag.getBoolean("CheatMode");
+        cheatMode = tag.contains("cheatMode") && tag.getBoolean("cheatMode");
     }
 
     // ========== MenuProvider ==========
@@ -375,67 +396,6 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
         return null; // UI handled by BlockUI interface on the block
-    }
-
-    // ========== JSON 序列化 ==========
-
-    private String configToJson() {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("scanRange", scanRange);
-        obj.addProperty("cooldown", cooldownSec);
-        obj.addProperty("enterDelay", enterDelay);
-        JsonObject slotsObj = new JsonObject();
-        for (Map.Entry<String, Integer> entry : slots.entrySet()) {
-            slotsObj.addProperty(entry.getKey(), entry.getValue());
-        }
-        obj.add("slots", slotsObj);
-        return GSON.toJson(obj);
-    }
-
-    private void loadConfigFromJson(String json) {
-        try {
-            JsonObject obj = GSON.fromJson(json, JsonObject.class);
-            if (obj == null) return;
-            scanRange = getJsonInt(obj, "scanRange", 12);
-            cooldownSec = getJsonInt(obj, "cooldown", 5);
-            enterDelay = getJsonInt(obj, "enterDelay", 3);
-            if (obj.has("slots")) {
-                JsonObject slotsObj = obj.getAsJsonObject("slots");
-                Map<String, Integer> loaded = new HashMap<>();
-                for (Map.Entry<String, JsonElement> entry : slotsObj.entrySet()) {
-                    loaded.put(entry.getKey(), entry.getValue().getAsInt());
-                }
-                slots = loaded;
-            }
-        } catch (Exception e) {
-            LOGGER.warn("[AmmoCrateBE] 解析 StationConfig 失败: {}", e.getMessage());
-        }
-    }
-
-    private String timersToJson() {
-        JsonObject obj = new JsonObject();
-        for (Map.Entry<String, Long> entry : vehicleTimers.entrySet()) {
-            obj.addProperty(entry.getKey(), entry.getValue());
-        }
-        return GSON.toJson(obj);
-    }
-
-    private void loadTimersFromJson(String json) {
-        try {
-            JsonObject obj = GSON.fromJson(json, JsonObject.class);
-            vehicleTimers.clear();
-            if (obj != null) {
-                for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
-                    vehicleTimers.put(entry.getKey(), entry.getValue().getAsLong());
-                }
-            }
-        } catch (Exception e) {
-            vehicleTimers.clear();
-        }
-    }
-
-    private static int getJsonInt(JsonObject obj, String key, int def) {
-        return obj.has(key) ? obj.get(key).getAsInt() : def;
     }
 
     /** 默认弹药配置（空 — 由 GUI 负责配置） */

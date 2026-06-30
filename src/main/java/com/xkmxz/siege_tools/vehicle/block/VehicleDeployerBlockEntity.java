@@ -1,13 +1,12 @@
 package com.xkmxz.siege_tools.vehicle.block;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
 import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -40,7 +39,7 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     private float yaw = 0.0f, pitch = 0.0f;
     private String deployedUUID = "";
     private long cooldownEnd = 0;
-    private String deployNBT = "{}";
+    private CompoundTag deployNBT = new CompoundTag();
     private String displayName = "";
     private boolean spawnWithAmmo = true;
 
@@ -157,8 +156,15 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
     public long getCooldownEnd() { return cooldownEnd; }
     public void setCooldownEnd(long cooldownEnd) { this.cooldownEnd = cooldownEnd; setChanged(); }
 
-    public String getDeployNBT() { return deployNBT; }
-    public void setDeployNBT(String deployNBT) { this.deployNBT = deployNBT; setChanged(); }
+    public CompoundTag getDeployNBT() { return deployNBT; }
+    public void setDeployNBT(CompoundTag deployNBT) { this.deployNBT = deployNBT != null ? deployNBT : new CompoundTag(); setChanged(); }
+
+    /** 将 deployNBT 转为 JSON 字符串，供 GUI 文本框展示 */
+    public String getDeployNBTAsJson() {
+        if (deployNBT == null || deployNBT.isEmpty()) return "{}";
+        // CompoundTag → SNBT 格式文本（与 JSON 兼容，便于编辑）
+        return deployNBT.toString();
+    }
 
     public boolean isSpawnWithAmmo() { return spawnWithAmmo; }
     public void setSpawnWithAmmo(boolean spawnWithAmmo) { this.spawnWithAmmo = spawnWithAmmo; setChanged(); }
@@ -179,7 +185,7 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
         tag.putFloat("pitch", pitch);
         tag.putString("deployedUUID", deployedUUID);
         tag.putLong("cooldownEnd", cooldownEnd);
-        tag.putString("deployNBT", deployNBT);
+        tag.put("deployNBT", deployNBT);
         tag.putString("displayName", displayName);
         tag.putBoolean("spawnWithAmmo", spawnWithAmmo);
     }
@@ -198,8 +204,7 @@ public class VehicleDeployerBlockEntity extends BlockEntity implements MenuProvi
         pitch = tag.contains("pitch") ? tag.getFloat("pitch") : 0.0f;
         deployedUUID = tag.getString("deployedUUID");
         cooldownEnd = tag.getLong("cooldownEnd");
-        deployNBT = tag.getString("deployNBT");
-        if (deployNBT.isEmpty()) deployNBT = "{}";
+        deployNBT = tag.contains("deployNBT", Tag.TAG_COMPOUND) ? tag.getCompound("deployNBT") : new CompoundTag();
         displayName = tag.getString("displayName");
         spawnWithAmmo = !tag.contains("spawnWithAmmo") || tag.getBoolean("spawnWithAmmo");
     }
