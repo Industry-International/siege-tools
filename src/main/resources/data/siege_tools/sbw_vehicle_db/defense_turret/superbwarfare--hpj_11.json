@@ -1,38 +1,36 @@
 {
-  "formatVersion": 1,
   "vehicleId": "superbwarfare:hpj_11",
   "mod": "superbwarfare",
+  "category": "defense_turret",
+  "baseName": "hpj_11",
   "displayType": "Defense",
+  "maxHealth": 350,
+  "maxEnergy": 5000000,
+  "hasDecoy": false,
+  "engineType": "Fixed",
+  "mass": 30,
+  "upStep": 0,
+  "containerType": "Small",
   "hudType": "@Artillery",
-  "stats": {
-    "maxHealth": 350,
-    "maxEnergy": 5000000,
-    "mass": 30,
-    "upStep": 0,
-    "seatCount": 0,
-    "containerType": "Small",
-    "engineType": "Fixed",
-    "hasDecoy": false
-  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
+  "seatCount": 0,
   "weapons": [
     {
       "key": "Main",
+      "displayKey": "Main",
       "ammoTypes": [
         "superbwarfare:small_shell_ap"
       ],
       "magazine": 1,
       "rpm": 1200,
-      "damage": 25
+      "damage": 25,
+      "hasOverride": false
     }
   ],
-  "defaultAmmo": {
-    "superbwarfare:small_shell_ap": 32
-  },
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 5000000,
     "Health": 350,
     "Invulnerable": 0,
@@ -45,6 +43,29 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Main": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "superbwarfare:small_shell_ap"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:small_shell_ap": 32
   }
 }

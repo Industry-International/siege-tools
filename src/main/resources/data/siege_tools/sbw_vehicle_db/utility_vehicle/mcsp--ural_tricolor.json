@@ -1,25 +1,25 @@
 {
-  "formatVersion": 1,
   "vehicleId": "mcsp:ural_tricolor",
   "mod": "mcsp",
+  "category": "utility_vehicle",
+  "baseName": "ural_tricolor",
   "displayType": "Car",
+  "maxHealth": 250,
+  "maxEnergy": 5000000,
+  "hasDecoy": false,
+  "engineType": "Wheel",
+  "mass": 20,
+  "upStep": 1.5,
+  "containerType": "Huge",
   "hudType": null,
-  "stats": {
-    "maxHealth": 250,
-    "maxEnergy": 5000000,
-    "mass": 20,
-    "upStep": 1.5,
-    "seatCount": 10,
-    "containerType": "Huge",
-    "engineType": "Wheel",
-    "hasDecoy": false
-  },
   "parts": [
     "WheelRight",
     "WheelLeft",
     "Interactive"
   ],
-  "spawnNbt": {
+  "seatCount": 10,
+  "weapons": [],
+  "nbtTemplate": {
     "Energy": 5000000,
     "Health": 250,
     "Invulnerable": 0,
@@ -33,5 +33,6 @@
     "LeftWheelDamaged": 0,
     "InteractiveHealth": 100,
     "InteractiveDamaged": 0
-  }
+  },
+  "ammoSlots": {}
 }

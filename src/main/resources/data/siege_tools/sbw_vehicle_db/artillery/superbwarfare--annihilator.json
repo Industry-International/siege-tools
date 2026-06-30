@@ -1,37 +1,51 @@
 {
-  "formatVersion": 1,
   "vehicleId": "superbwarfare:annihilator",
   "mod": "superbwarfare",
+  "category": "artillery",
+  "baseName": "annihilator",
   "displayType": "Artillery",
+  "maxHealth": 1200,
+  "maxEnergy": 20000000,
+  "hasDecoy": false,
+  "engineType": "Fixed",
+  "mass": 2774,
+  "upStep": 0,
+  "containerType": "Empty",
   "hudType": "@Artillery",
-  "stats": {
-    "maxHealth": 1200,
-    "maxEnergy": 20000000,
-    "mass": 2774,
-    "upStep": 0,
-    "seatCount": 0,
-    "containerType": "Empty",
-    "engineType": "Fixed",
-    "hasDecoy": false
-  },
+  "parts": [],
+  "seatCount": 0,
   "weapons": [
     {
       "key": "Main",
+      "displayKey": "Main",
       "ammoTypes": [
         "FE"
       ],
       "magazine": 1,
       "rpm": 12,
-      "damage": 1000
+      "damage": 1000,
+      "hasOverride": false
     }
   ],
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 20000000,
     "Health": 1200,
     "Invulnerable": 0,
     "IsWreck": 0,
     "Power": 0,
     "DecoyReady": 1,
-    "ChargeProgress": 0
-  }
+    "ChargeProgress": 0,
+    "WeaponState": {
+      "Main": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "ammoSlots": {}
 }

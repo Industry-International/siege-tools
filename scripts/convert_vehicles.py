@@ -35,9 +35,9 @@ def convert_vehicle(data):
         new["mod"] = data["mod"]
 
     # display metadata
-    if "displayType" in data:
+    if "displayType" in data and data["displayType"] is not None:
         new["displayType"] = data["displayType"]
-    if "hudType" in data:
+    if "hudType" in data and data["hudType"] is not None:
         new["hudType"] = data["hudType"]
 
     # stats group

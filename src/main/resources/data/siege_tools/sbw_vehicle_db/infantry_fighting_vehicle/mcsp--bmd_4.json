@@ -1,60 +1,60 @@
 {
-  "formatVersion": 1,
   "vehicleId": "mcsp:bmd_4",
   "mod": "mcsp",
+  "category": "infantry_fighting_vehicle",
+  "baseName": "bmd_4",
   "displayType": "APC",
+  "maxHealth": 300,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Track",
+  "mass": 14.5,
+  "upStep": 2.25,
+  "containerType": "Medium",
   "hudType": "@Land",
-  "stats": {
-    "maxHealth": 300,
-    "maxEnergy": 5000000,
-    "mass": 14.5,
-    "upStep": 2.25,
-    "seatCount": 8,
-    "containerType": "Medium",
-    "engineType": "Track",
-    "hasDecoy": true
-  },
   "parts": [
     "WheelRight",
     "WheelLeft",
     "Turret"
   ],
+  "seatCount": 8,
   "weapons": [
     {
       "key": "Gun",
+      "displayKey": "Gun",
       "ammoTypes": [
         "mcsp:30mm_ap"
       ],
       "magazine": 1,
       "rpm": 300,
-      "damage": 35
+      "damage": 35,
+      "hasOverride": false
     },
     {
       "key": "Cannon",
+      "displayKey": "Cannon",
       "ammoTypes": [
         "mcsp:125mm_he",
         "mcsp:tow_2"
       ],
       "magazine": 1,
-      "damage": 150
+      "rpm": null,
+      "damage": 150,
+      "hasOverride": true
     },
     {
       "key": "MainMachineGun",
+      "displayKey": "MainMachineGun",
       "ammoTypes": [
         "mcsp:bullet762"
       ],
       "magazine": 1,
       "rpm": 600,
-      "damage": 9.5
+      "damage": 9.5,
+      "hasOverride": false
     }
   ],
-  "defaultAmmo": {
-    "mcsp:30mm_ap": 128,
-    "mcsp:125mm_he": 128,
-    "mcsp:tow_2": 16,
-    "mcsp:bullet762": 256
-  },
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 5000000,
     "Health": 300,
     "Invulnerable": 0,
@@ -69,6 +69,65 @@
     "TurretHealth": 100,
     "TurretDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Gun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MainMachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 128,
+          "id": "mcsp:30mm_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 128,
+          "id": "mcsp:125mm_he"
+        },
+        {
+          "Slot": 2,
+          "count": 16,
+          "id": "mcsp:tow_2"
+        },
+        {
+          "Slot": 3,
+          "count": 256,
+          "id": "mcsp:bullet762"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "mcsp:30mm_ap": 128,
+    "mcsp:125mm_he": 128,
+    "mcsp:tow_2": 16,
+    "mcsp:bullet762": 256
   }
 }

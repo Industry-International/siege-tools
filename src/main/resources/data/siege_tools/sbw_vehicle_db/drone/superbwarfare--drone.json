@@ -1,23 +1,24 @@
 {
-  "formatVersion": 1,
   "vehicleId": "superbwarfare:drone",
   "mod": "superbwarfare",
+  "category": "drone",
+  "baseName": "drone",
   "displayType": "Drone",
+  "maxHealth": 5,
+  "maxEnergy": 10000000,
+  "hasDecoy": false,
+  "engineType": null,
+  "mass": 0.0005,
+  "upStep": 0,
+  "containerType": "Empty",
   "hudType": null,
-  "stats": {
-    "maxHealth": 5,
-    "maxEnergy": 10000000,
-    "mass": 0.0005,
-    "upStep": 0,
-    "seatCount": 0,
-    "containerType": "Empty",
-    "hasDecoy": false
-  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "spawnNbt": {
+  "seatCount": 0,
+  "weapons": [],
+  "nbtTemplate": {
     "Energy": 10000000,
     "Health": 5,
     "Invulnerable": 0,
@@ -31,5 +32,6 @@
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
     "TurretBurnTimer": 0
-  }
+  },
+  "ammoSlots": {}
 }

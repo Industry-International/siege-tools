@@ -1,39 +1,37 @@
 {
-  "formatVersion": 1,
   "vehicleId": "mcsp:humvee_carc",
   "mod": "mcsp",
+  "category": "utility_vehicle",
+  "baseName": "humvee_carc",
   "displayType": "Car",
+  "maxHealth": 150,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Wheel",
+  "mass": 4.5,
+  "upStep": 1.5,
+  "containerType": "Medium",
   "hudType": "@Land",
-  "stats": {
-    "maxHealth": 150,
-    "maxEnergy": 5000000,
-    "mass": 4.5,
-    "upStep": 1.5,
-    "seatCount": 4,
-    "containerType": "Medium",
-    "engineType": "Wheel",
-    "hasDecoy": true
-  },
   "parts": [
     "WheelRight",
     "WheelLeft",
     "Turret"
   ],
+  "seatCount": 4,
   "weapons": [
     {
       "key": "MachineGun",
+      "displayKey": "MachineGun",
       "ammoTypes": [
         "mcsp:bullet762"
       ],
       "magazine": 1,
       "rpm": 450,
-      "damage": 40
+      "damage": 40,
+      "hasOverride": false
     }
   ],
-  "defaultAmmo": {
-    "mcsp:bullet762": 256
-  },
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 5000000,
     "Health": 150,
     "Invulnerable": 0,
@@ -48,6 +46,29 @@
     "TurretHealth": 100,
     "TurretDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "MachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 256,
+          "id": "mcsp:bullet762"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "mcsp:bullet762": 256
   }
 }

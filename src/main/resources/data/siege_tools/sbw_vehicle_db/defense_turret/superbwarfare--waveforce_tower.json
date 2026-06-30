@@ -1,35 +1,36 @@
 {
-  "formatVersion": 1,
   "vehicleId": "superbwarfare:waveforce_tower",
   "mod": "superbwarfare",
+  "category": "defense_turret",
+  "baseName": "waveforce_tower",
   "displayType": "Defense",
+  "maxHealth": 400,
+  "maxEnergy": 10000000,
+  "hasDecoy": false,
+  "engineType": "Fixed",
+  "mass": 10,
+  "upStep": 0,
+  "containerType": "Empty",
   "hudType": null,
-  "stats": {
-    "maxHealth": 400,
-    "maxEnergy": 10000000,
-    "mass": 10,
-    "upStep": 0,
-    "seatCount": 0,
-    "containerType": "Empty",
-    "engineType": "Fixed",
-    "hasDecoy": false
-  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
+  "seatCount": 0,
   "weapons": [
     {
       "key": "Main",
+      "displayKey": "Main",
       "ammoTypes": [
         "FE"
       ],
       "magazine": 1,
       "rpm": 20,
-      "damage": 350
+      "damage": 350,
+      "hasOverride": false
     }
   ],
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 10000000,
     "Health": 400,
     "Invulnerable": 0,
@@ -42,6 +43,18 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0
-  }
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Main": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "ammoSlots": {}
 }

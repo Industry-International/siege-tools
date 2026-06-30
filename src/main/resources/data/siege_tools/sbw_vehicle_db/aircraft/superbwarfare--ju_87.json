@@ -1,56 +1,132 @@
 {
-  "formatVersion": 1,
   "vehicleId": "superbwarfare:ju_87",
   "mod": "superbwarfare",
+  "category": "aircraft",
+  "baseName": "ju_87",
   "displayType": "Airplane",
+  "maxHealth": 250,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Aircraft",
+  "mass": 5,
+  "upStep": 1.1,
+  "containerType": "Small",
   "hudType": "@OldAircraft",
-  "stats": {
-    "maxHealth": 250,
-    "maxEnergy": 5000000,
-    "mass": 5,
-    "upStep": 1.1,
-    "seatCount": 2,
-    "containerType": "Small",
-    "engineType": "Aircraft",
-    "hasDecoy": true
-  },
+  "parts": [],
+  "seatCount": 2,
   "weapons": [
     {
       "key": "MachineGun",
+      "displayKey": "MachineGun",
       "ammoTypes": [
         "superbwarfare:rifle_ammo"
       ],
       "magazine": 1,
       "rpm": 1200,
-      "damage": 15
+      "damage": 15,
+      "hasOverride": false
+    },
+    {
+      "key": "PassengerGun",
+      "displayKey": "PassengerGun",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
     },
     {
       "key": "Bomb",
+      "displayKey": "Bomb",
       "ammoTypes": [
         "superbwarfare:medium_aerial_bomb"
       ],
-      "magazine": 1
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
     },
     {
       "key": "BombSmall",
+      "displayKey": "BombSmall",
       "ammoTypes": [
         "superbwarfare:small_aerial_bomb"
       ],
-      "magazine": 4
+      "magazine": 4,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
     }
   ],
-  "defaultAmmo": {
-    "superbwarfare:rifle_ammo": 192,
-    "superbwarfare:medium_aerial_bomb": 8,
-    "superbwarfare:small_aerial_bomb": 8
-  },
-  "spawnNbt": {
+  "nbtTemplate": {
     "Energy": 5000000,
     "Health": 250,
     "Invulnerable": 0,
     "IsWreck": 0,
     "Power": 0,
     "DecoyReady": 1,
-    "ChargeProgress": 0
+    "ChargeProgress": 0,
+    "WeaponState": {
+      "MachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "PassengerGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Bomb": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "BombSmall": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 192,
+          "id": "superbwarfare:rifle_ammo"
+        },
+        {
+          "Slot": 1,
+          "count": 8,
+          "id": "superbwarfare:medium_aerial_bomb"
+        },
+        {
+          "Slot": 2,
+          "count": 8,
+          "id": "superbwarfare:small_aerial_bomb"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:rifle_ammo": 192,
+    "superbwarfare:medium_aerial_bomb": 8,
+    "superbwarfare:small_aerial_bomb": 8
   }
 }

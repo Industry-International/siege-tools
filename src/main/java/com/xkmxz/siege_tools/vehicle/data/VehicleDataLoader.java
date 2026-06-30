@@ -54,14 +54,17 @@ public class VehicleDataLoader {
             List<String> vehicleList = new ArrayList<>();
             byCategory.put(catKey, vehicleList);
 
-            // 3. 自动发现该分类目录下的所有 .json 文件
+            // 3. 读取该分类下的载具文件（从 files 列表）
+            if (!catInfo.has("files")) {
+                LOGGER.warn("[VehicleDataLoader] 分类 {} 无文件列表", catKey);
+                continue;
+            }
+
             String dirPath = DATA_ROOT + "/" + catKey;
-            List<String> fileNames = listDirectory(resourceManager, dirPath);
-
-            for (String fileName : fileNames) {
-                if (!fileName.endsWith(".json")) continue;
-
-                String filePath = dirPath + "/" + fileName;
+            JsonArray files = catInfo.getAsJsonArray("files");
+            for (JsonElement fileElem : files) {
+                String filename = fileElem.getAsString();
+                String filePath = dirPath + "/" + filename;
                 try {
                     JsonObject vehicleJson = loadJson(resourceManager, filePath);
                     if (vehicleJson == null || !vehicleJson.has("vehicleId")) {
@@ -105,27 +108,19 @@ public class VehicleDataLoader {
     @Nullable
     private static VehicleData parseVehicle(JsonObject json, String category) {
         try {
-            int formatVersion = json.has("formatVersion") ? json.get("formatVersion").getAsInt() : 1;
             String vehicleId = json.get("vehicleId").getAsString();
             String mod = json.has("mod") ? json.get("mod").getAsString() : null;
             String displayType = json.has("displayType") ? json.get("displayType").getAsString() : null;
-            String hudType = json.has("hudType") ? json.get("hudType").getAsString() : null;
+            String hudType = json.has("hudType") && !json.get("hudType").isJsonNull() ? json.get("hudType").getAsString() : null;
 
-            // stats
-            VehicleData.VehicleStats stats = null;
-            if (json.has("stats")) {
-                JsonObject s = json.getAsJsonObject("stats");
-                stats = new VehicleData.VehicleStats(
-                        getInt(s, "maxHealth"),
-                        getInt(s, "maxEnergy"),
-                        getDouble(s, "mass"),
-                        getDouble(s, "upStep"),
-                        getInt(s, "seatCount"),
-                        getString(s, "containerType"),
-                        getString(s, "engineType"),
-                        s.has("hasDecoy") ? s.get("hasDecoy").getAsBoolean() : null
-                );
-            }
+            // stats（原格式：顶层字段）
+            VehicleData.VehicleStats stats = new VehicleData.VehicleStats(
+                    getInt(json, "maxHealth"), getInt(json, "maxEnergy"),
+                    getDouble(json, "mass"), getDouble(json, "upStep"),
+                    getInt(json, "seatCount"), getString(json, "containerType"),
+                    getString(json, "engineType"),
+                    json.has("hasDecoy") ? json.get("hasDecoy").getAsBoolean() : null
+            );
 
             // parts
             List<String> parts = null;
@@ -135,41 +130,55 @@ public class VehicleDataLoader {
                 for (JsonElement e : arr) parts.add(e.getAsString());
             }
 
-            // weapons
+            // weapons（过滤空武器）
             List<VehicleData.WeaponData> weapons = null;
             if (json.has("weapons")) {
                 JsonArray arr = json.getAsJsonArray("weapons");
                 weapons = new ArrayList<>();
                 for (JsonElement e : arr) {
                     JsonObject w = e.getAsJsonObject();
+                    if (!w.has("ammoTypes") || w.getAsJsonArray("ammoTypes").size() == 0) continue;
                     String key = w.get("key").getAsString();
                     String displayKey = w.has("displayKey") ? w.get("displayKey").getAsString() : null;
                     List<String> ammoTypes = new ArrayList<>();
                     for (JsonElement at : w.getAsJsonArray("ammoTypes")) ammoTypes.add(at.getAsString());
                     int magazine = w.has("magazine") ? w.get("magazine").getAsInt() : 1;
-                    Integer rpm = w.has("rpm") ? w.get("rpm").getAsInt() : null;
-                    Double damage = w.has("damage") ? w.get("damage").getAsDouble() : null;
+                    Integer rpm = w.has("rpm") && !w.get("rpm").isJsonNull() ? w.get("rpm").getAsInt() : null;
+                    Double damage = w.has("damage") && !w.get("damage").isJsonNull() ? w.get("damage").getAsDouble() : null;
                     weapons.add(new VehicleData.WeaponData(key, displayKey, ammoTypes, magazine, rpm, damage));
                 }
+                if (weapons != null && weapons.isEmpty()) weapons = null;
             }
 
-            // defaultAmmo
+            // ammoSlots → defaultAmmo
             Map<String, Integer> defaultAmmo = null;
-            if (json.has("defaultAmmo")) {
-                JsonObject am = json.getAsJsonObject("defaultAmmo");
+            if (json.has("ammoSlots")) {
+                JsonObject am = json.getAsJsonObject("ammoSlots");
                 defaultAmmo = new LinkedHashMap<>();
                 for (Map.Entry<String, JsonElement> e : am.entrySet()) {
                     defaultAmmo.put(e.getKey(), e.getValue().getAsInt());
                 }
+                if (defaultAmmo.isEmpty()) defaultAmmo = null;
             }
 
-            // rawSpawnNbt
-            JsonObject rawSpawnNbt = json.has("spawnNbt") ? json.getAsJsonObject("spawnNbt") : null;
+            // nbtTemplate → rawSpawnNbt（去掉 WeaponState 和 Inventory，这两个会自动生成）
+            JsonObject rawSpawnNbt = null;
+            if (json.has("nbtTemplate")) {
+                JsonObject src = json.getAsJsonObject("nbtTemplate");
+                JsonObject clean = new JsonObject();
+                for (Map.Entry<String, JsonElement> e : src.entrySet()) {
+                    String key = e.getKey();
+                    if (!"WeaponState".equals(key) && !"Inventory".equals(key)) {
+                        clean.add(key, e.getValue());
+                    }
+                }
+                if (clean.size() > 0) rawSpawnNbt = clean;
+            }
 
-            // 生成完整 spawnNbt
+            // 生成完整 spawnNbt（含 WeaponState + Inventory）
             CompoundTag fullSpawnNbt = generateFullSpawnNbt(rawSpawnNbt, weapons, defaultAmmo);
 
-            return new VehicleData(formatVersion, vehicleId, mod, displayType, hudType,
+            return new VehicleData(0, vehicleId, mod, displayType, hudType,
                     stats, parts, weapons, defaultAmmo, rawSpawnNbt, fullSpawnNbt);
 
         } catch (Exception e) {
@@ -260,24 +269,6 @@ public class VehicleDataLoader {
             LOGGER.warn("[VehicleDataLoader] 读取 JSON 失败: {} - {}", location, e.getMessage());
             return null;
         }
-    }
-
-    /** 通过 ResourceManager 列出指定路径下的所有 .json 文件 */
-    private static List<String> listDirectory(ResourceManager resourceManager, String pathPrefix) {
-        Set<String> files = new LinkedHashSet<>();
-        Map<ResourceLocation, Resource> map = resourceManager.listResources("siege_tools",
-                loc -> loc.getPath().startsWith(pathPrefix + "/") && loc.getPath().endsWith(".json"));
-        for (ResourceLocation loc : map.keySet()) {
-            String fullPath = loc.getPath();
-            // 从 fullPath 提取文件名
-            if (fullPath.startsWith(pathPrefix + "/")) {
-                String fileName = fullPath.substring(pathPrefix.length() + 1);
-                if (!fileName.startsWith("_") && !fileName.isEmpty()) {
-                    files.add(fileName);
-                }
-            }
-        }
-        return new ArrayList<>(files);
     }
 
     private static CompoundTag toCompoundTag(JsonObject obj) {
