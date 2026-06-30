@@ -156,22 +156,26 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         UIElement btnRow = new UIElement();
         Button btnSave = new Button().setText(Component.literal("§a✔ 保存")); btnSave.lss("padding", "3 10");
         btnSave.setOnServerClick(e -> {
-            be.setVehicleType(fieldVtype.getText());
-            be.setRespawnDelay(Math.max(20, sInt(fieldDelay.getText(), 600)));
-            be.setAutoRespawn("1".equals(fieldAuto.getText()));
-            be.setSpawnWithAmmo("1".equals(fieldAmmo.getText()));
-            be.setOffsets(sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0), (float)sInt(fieldYaw.getText(), 0), (float)sInt(fieldPitch.getText(), 0));
+            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
+            if (!(r instanceof VehicleDeployerBlockEntity b)) return;
+            b.setVehicleType(fieldVtype.getText());
+            b.setRespawnDelay(Math.max(20, sInt(fieldDelay.getText(), 600)));
+            b.setAutoRespawn("1".equals(fieldAuto.getText()));
+            b.setSpawnWithAmmo("1".equals(fieldAmmo.getText()));
+            b.setOffsets(sInt(fieldOx.getText(), 0), sInt(fieldOy.getText(), 1), sInt(fieldOz.getText(), 0), (float)sInt(fieldYaw.getText(), 0), (float)sInt(fieldPitch.getText(), 0));
             var nbt = fieldNBT.getText(); if (nbt.isEmpty()) nbt = "{}";
-            be.setDeployNBT(nbt);
-            be.setChanged();
+            b.setDeployNBT(nbt);
+            b.setChanged();
             holder.player.displayClientMessage(Component.literal("§a✔ 配置已保存！"), false);
         });
         btnRow.addChild(btnSave);
 
         Button btnDeploy = new Button().setText(Component.literal("§6⚡ 立即部署")); btnDeploy.lss("padding", "3 10");
         btnDeploy.setOnServerClick(e -> {
-            if (be.getVehicleType().isEmpty()) { holder.player.displayClientMessage(Component.literal("§c请先配置载具类型"), false); return; }
-            be.setPendingDeploy(true);
+            BlockEntity r = holder.player.level().getBlockEntity(holder.pos);
+            if (!(r instanceof VehicleDeployerBlockEntity b)) return;
+            if (b.getVehicleType().isEmpty()) { holder.player.displayClientMessage(Component.literal("§c请先配置载具类型"), false); return; }
+            b.setPendingDeploy(true);
             holder.player.displayClientMessage(Component.literal("§e⏳ 部署命令已提交"), false);
         });
         btnRow.addChild(btnDeploy);

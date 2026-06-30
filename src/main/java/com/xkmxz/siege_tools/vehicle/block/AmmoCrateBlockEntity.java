@@ -438,38 +438,8 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
         return obj.has(key) ? obj.get(key).getAsInt() : def;
     }
 
-    /** 默认弹药配置 */
+    /** 默认弹药配置（空 — 由 GUI 负责配置） */
     public static Map<String, Integer> getDefaultSlots() {
-        Map<String, Integer> map = new LinkedHashMap<>();
-        map.put("large_shell_ap", 64);
-        map.put("large_shell_he", 64);
-        map.put("large_shell_gs", 64);
-        map.put("small_shell_ap", 64);
-        map.put("small_shell_he", 64);
-        map.put("small_shell_gs", 64);
-        map.put("small_shell_aa", 64);
-        map.put("rifle_ammo", 192);
-        map.put("heavy_ammo", 128);
-        map.put("small_rocket", 32);
-        map.put("missile", 8);
-        map.put("rocket", 16);
-        map.put("medium_anti_ground_missile", 8);
-        map.put("large_anti_ground_missile", 8);
-        map.put("medium_anti_air_missile", 8);
-        map.put("mortar_shell", 32);
-        map.put("medium_aerial_bomb", 8);
-        map.put("small_aerial_bomb", 8);
-        map.put("mcsp_25mm_ap", 128);
-        map.put("mcsp_30mm_ap", 128);
-        map.put("mcsp_40mm_explosive", 64);
-        map.put("mcsp_40mm_smoke", 32);
-        map.put("mcsp_120mm_bulletmortar", 32);
-        map.put("mcsp_125mm_ap", 32);
-        map.put("mcsp_125mm_he", 32);
-        map.put("mcsp_bullet762", 256);
-        map.put("mcsp_smallarmscartridge", 256);
-        map.put("mcsp_tow_2", 16);
-        map.put("mcsp_mlrs_shells", 32);
-        return map;
+        return new HashMap<>();
     }
 }
