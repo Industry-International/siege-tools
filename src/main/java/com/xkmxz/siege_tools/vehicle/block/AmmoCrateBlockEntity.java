@@ -1,29 +1,35 @@
 package com.xkmxz.siege_tools.vehicle.block;
 
 import com.google.gson.*;
+import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
+import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.gui.ui.UI;
+import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.*;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.inventory.InventorySlots;
 import com.mojang.logging.LogUtils;
-import com.xkmxz.siege_tools.vehicle.data.AmmoTypeRegistry;
-import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
 import com.xkmxz.siege_tools.vehicle.data.VehicleDataManager;
+import com.xkmxz.siege_tools.vehicle.registry.ModBlockEntities;
+import com.xkmxz.siege_tools.vehicle.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.commands.CommandSourceStack;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -376,7 +382,172 @@ public class AmmoCrateBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return null; // UI handled by KubeJS via KJSBlockUIMenuType
+        return buildLDLib2UI(containerId, playerInv, player);
+    }
+
+    private AbstractContainerMenu buildLDLib2UI(int containerId, Inventory playerInv, Player player) {
+        // ── 输入字段 ──
+        TextField fieldScanRange = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(scanRange)); fieldScanRange.lss("width", 55);
+        TextField fieldCooldown = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(cooldownSec)); fieldCooldown.lss("width", 55);
+        TextField fieldEnterDelay = new TextField().setNumbersOnlyInt(1, 999999).setText(String.valueOf(enterDelay)); fieldEnterDelay.lss("width", 55);
+
+        // 弹药字段
+        record AmmoEntry(String key, String label) {}
+        List<AmmoEntry> allAmmo = List.of(
+            new AmmoEntry("large_shell_ap", "§6大口径AP"),
+            new AmmoEntry("large_shell_he", "§c大口径HE"),
+            new AmmoEntry("large_shell_gs", "§a大口径葡萄"),
+            new AmmoEntry("mortar_shell", "§6迫击炮弹"),
+            new AmmoEntry("small_shell_ap", "§b小口径AP"),
+            new AmmoEntry("small_shell_he", "§d小口径HE"),
+            new AmmoEntry("small_shell_gs", "§a小口径葡萄"),
+            new AmmoEntry("small_shell_aa", "§b防空弹"),
+            new AmmoEntry("rifle_ammo", "§7步枪弹"),
+            new AmmoEntry("heavy_ammo", "§9重弹"),
+            new AmmoEntry("small_rocket", "§e小型火箭"),
+            new AmmoEntry("rocket", "§e火箭弹"),
+            new AmmoEntry("missile", "§a导弹"),
+            new AmmoEntry("medium_anti_ground_missile", "§a中型对地导弹"),
+            new AmmoEntry("large_anti_ground_missile", "§a大型对地导弹"),
+            new AmmoEntry("medium_anti_air_missile", "§a防空导弹"),
+            new AmmoEntry("medium_aerial_bomb", "§c中型航弹"),
+            new AmmoEntry("small_aerial_bomb", "§c小型航弹"),
+            new AmmoEntry("mcsp_125mm_ap", "§6125mm穿甲"),
+            new AmmoEntry("mcsp_125mm_he", "§c125mm高爆"),
+            new AmmoEntry("mcsp_120mm_bulletmortar", "§5120mm迫击"),
+            new AmmoEntry("mcsp_tow_2", "§aTOW-2导弹"),
+            new AmmoEntry("mcsp_mlrs_shells", "§eMLRS火箭"),
+            new AmmoEntry("mcsp_25mm_ap", "§b25mm机炮"),
+            new AmmoEntry("mcsp_30mm_ap", "§d30mm机炮"),
+            new AmmoEntry("mcsp_40mm_explosive", "§c40mm高爆"),
+            new AmmoEntry("mcsp_40mm_smoke", "§740mm烟雾"),
+            new AmmoEntry("mcsp_bullet762", "§77.62mm机枪"),
+            new AmmoEntry("mcsp_smallarmscartridge", "§7小口径弹药")
+        );
+        Map<String, TextField> slotFields = new LinkedHashMap<>();
+        for (AmmoEntry ae : allAmmo) {
+            TextField f = new TextField().setNumbersOnlyInt(0, 999999).setText(String.valueOf(slots.getOrDefault(ae.key, 0)));
+            f.lss("width", 55);
+            slotFields.put(ae.key, f);
+        }
+
+        // ── 构建 UI ──
+        UIElement root = new UIElement();
+        root.lss("width", 270).lss("padding", 6);
+
+        var title = new Label().setText(Component.literal("§6╔══ 弹药补给站配置 ══╗"));
+        title.lss("width", "100%");
+        title.textStyle(s -> s.textAlignHorizontal(com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal.CENTER));
+        root.addChild(title);
+        root.addChild(sep());
+
+        TabView tabView = new TabView();
+
+        // Tab 1: 基础
+        UIElement page1 = new UIElement().lss("padding", 4);
+        addRow(page1, "§7扫描范围:", fieldScanRange, " §7格");
+        addGap(page1);
+        addRow(page1, "§7冷却时间:", fieldCooldown, " §7秒");
+        addGap(page1);
+        addRow(page1, "§7驶入等待:", fieldEnterDelay, " §7秒");
+        addGap(page1);
+        page1.addChild(new Label().setText(Component.literal("§8← 切换标签页配置弹药")));
+        tabView.addTab(new Tab().setText("基础"), page1);
+
+        // Tab 2-7: 弹药配置
+        int[][] tabRanges = {{0,4}, {4,8}, {8,12}, {12,18}, {18,23}, {23,29}};
+        String[] tabNames = {"炮弹", "小口径", "枪/火箭", "导弹/航弹", "§aMCSP(上)", "§aMCSP(下)"};
+        String[] tabTitles = {"§e── 大口径炮弹 ──", "§e── 小口径机炮弹 ──", "§e── 枪弹/火箭弹 ──",
+            "§e── 导弹/航弹 ──", "§e── 坦克炮/导弹 ──", "§e── 机关炮/机枪 ──"};
+        for (int ti = 0; ti < tabRanges.length; ti++) {
+            UIElement page = new UIElement().lss("padding", 4);
+            page.addChild(new Label().setText(Component.literal(tabTitles[ti])));
+            for (int i = tabRanges[ti][0]; i < tabRanges[ti][1] && i < allAmmo.size(); i++) {
+                AmmoEntry ae = allAmmo.get(i);
+                addRow(page, ae.label + ":", slotFields.get(ae.key), " 个");
+            }
+            tabView.addTab(new Tab().setText(tabNames[ti]), page);
+        }
+
+        // Tab 8: 作弊
+        UIElement cheatPage = new UIElement().lss("padding", 4);
+        cheatPage.addChild(new Label().setText(Component.literal("§c── 作弊功能 ──")));
+        if (player.hasPermissions(2)) {
+            addGap(cheatPage);
+            Button btnToggle = new Button().setText(Component.literal("§6⇄ 切换作弊模式")); btnToggle.lss("padding", "3 10");
+            btnToggle.setOnServerClick(e -> { cheatMode = !cheatMode; setChanged();
+                player.displayClientMessage(Component.literal("§6[弹药补给站] " + (cheatMode ? "§c作弊模式已开启" : "§a作弊模式已关闭")), false); });
+            cheatPage.addChild(btnToggle);
+            cheatPage.addChild(new Label().setText(Component.literal(cheatMode ? "§a✔ 作弊模式已开启" : "§7作弊模式已关闭")));
+            if (cheatMode) {
+                addGap(cheatPage);
+                Button btnManual = new Button().setText(Component.literal("§4⚡ 立即扫描补给")); btnManual.lss("padding", "4 12");
+                btnManual.setOnServerClick(e -> { triggerManualReplenish();
+                    player.displayClientMessage(Component.literal("§e⏳ 补给请求已提交"), false); });
+                cheatPage.addChild(btnManual);
+            }
+        } else {
+            addGap(cheatPage);
+            cheatPage.addChild(new Label().setText(Component.literal("§c你没有权限使用作弊功能")));
+        }
+        tabView.addTab(new Tab().setText("§c作弊"), cheatPage);
+
+        root.addChild(tabView);
+        root.addChild(sep());
+
+        // 按钮行
+        UIElement btnRow = new UIElement();
+        Button btnSave = new Button().setText(Component.literal("§a✔ 保存配置")); btnSave.lss("padding", "3 10");
+        btnSave.setOnServerClick(e -> {
+            Map<String, Integer> newSlots = new HashMap<>();
+            for (AmmoEntry ae : allAmmo) {
+                try { int v = Integer.parseInt(slotFields.get(ae.key).getText()); if (v > 0) newSlots.put(ae.key, v); } catch (NumberFormatException ex) {}
+            }
+            applyConfig(
+                safeInt(fieldScanRange.getText(), 12),
+                safeInt(fieldCooldown.getText(), 5),
+                safeInt(fieldEnterDelay.getText(), 3),
+                newSlots);
+            player.displayClientMessage(Component.literal("§a✔ 配置已保存！冷却已重置"), false);
+        });
+        btnRow.addChild(btnSave);
+
+        Button btnReset = new Button().setText(Component.literal("§e↻ 重置默认")); btnReset.lss("padding", "3 10");
+        btnReset.setOnServerClick(e -> { resetConfig();
+            player.displayClientMessage(Component.literal("§a✔ 已重置为默认配置"), false); });
+        btnRow.addChild(btnReset);
+        root.addChild(btnRow);
+        root.addChild(new InventorySlots());
+
+        ModularUI modularUI = ModularUI.of(UI.of(root), player);
+        IContainerUIHolder holder = new IContainerUIHolder() {
+            @Override public ModularUI createUI(Player p) { return modularUI; }
+            @Override public boolean isStillValid(Player p) { return true; }
+        };
+        modularUI.setMenu(new ModularUIContainerMenu(ModMenuTypes.AMMO_STATION.get(), containerId, playerInv, holder));
+        return modularUI.getMenu();
+    }
+
+    private static Label sep() {
+        Label s = new Label(); s.setText(Component.literal("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
+        s.lss("width", "100%").lss("overflow", "hidden");
+        return s;
+    }
+
+    private static void addRow(UIElement parent, String label, TextField field, String unit) {
+        UIElement row = new UIElement();
+        row.addChild(new Label().setText(Component.literal(label)));
+        row.addChild(field);
+        row.addChild(new Label().setText(Component.literal(unit)));
+        parent.addChild(row);
+    }
+
+    private static void addGap(UIElement parent) {
+        parent.addChild(new Label().setText(Component.literal(" ")));
+    }
+
+    private static int safeInt(String s, int def) {
+        try { return Math.max(0, Integer.parseInt(s)); } catch (NumberFormatException e) { return def; }
     }
 
     // ========== JSON 序列化 ==========

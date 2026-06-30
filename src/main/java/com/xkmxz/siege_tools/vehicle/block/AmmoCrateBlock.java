@@ -57,8 +57,7 @@ public class AmmoCrateBlock extends BaseEntityBlock {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (player instanceof ServerPlayer serverPlayer) {
-            com.lowdragmc.lowdraglib2.integration.kjs.ui.KJSBlockUIMenuType.openUI(
-                    serverPlayer, pos, "kubejs:ammo_station_cfg");
+            com.lowdragmc.lowdraglib2.gui.factory.BlockUIMenuType.openUI(serverPlayer, pos);
         }
         return InteractionResult.SUCCESS;
     }
