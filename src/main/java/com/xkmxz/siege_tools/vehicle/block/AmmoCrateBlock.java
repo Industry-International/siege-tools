@@ -46,31 +46,6 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         return (BlockEntityTicker<T>) createTickerHelper(type, ModBlockEntities.AMMO_STATION.get(), AmmoCrateBlockEntity::tick);
     }
 
-    // 弹药分类定义（参照 KubeJS 布局分组）
-    private static final class AmmoCat {
-        final String sectionKey;
-        final List<String> keys;
-        AmmoCat(String sectionKey, List<String> keys) {
-            this.sectionKey = sectionKey; this.keys = keys;
-        }
-    }
-    private static final List<AmmoCat> AMMO_CATEGORIES = List.of(
-        new AmmoCat("gui.siege_tools.ammo.section.large_shell",
-            List.of("large_shell_ap", "large_shell_he", "large_shell_gs", "mortar_shell")),
-        new AmmoCat("gui.siege_tools.ammo.section.small_caliber",
-            List.of("small_shell_ap", "small_shell_he", "small_shell_gs", "small_shell_aa")),
-        new AmmoCat("gui.siege_tools.ammo.section.gun_rocket",
-            List.of("rifle_ammo", "heavy_ammo", "small_rocket", "rocket")),
-        new AmmoCat("gui.siege_tools.ammo.section.missile_bomb",
-            List.of("missile", "medium_anti_ground_missile", "large_anti_ground_missile",
-                    "medium_anti_air_missile", "medium_aerial_bomb", "small_aerial_bomb")),
-        new AmmoCat("gui.siege_tools.ammo.section.mcsp_tank",
-            List.of("mcsp_125mm_ap", "mcsp_125mm_he", "mcsp_120mm_bulletmortar", "mcsp_tow_2", "mcsp_mlrs_shells")),
-        new AmmoCat("gui.siege_tools.ammo.section.mcsp_gun",
-            List.of("mcsp_25mm_ap", "mcsp_30mm_ap", "mcsp_40mm_explosive", "mcsp_40mm_smoke",
-                    "mcsp_bullet762", "mcsp_smallarmscartridge"))
-    );
-
     private static Component tl(String key) { return Component.translatable(key); }
 
     @Override
@@ -101,26 +76,46 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         BlockPos pos = holder.pos;
 
         var ammoReg = VehicleDataManager.getAmmoTypes();
-        var ammoShortNames = new ArrayList<String>();
+        // 从注册表获取分类，每分类一个 tab
+        var categories = new ArrayList<String>();
+        var catAmmoMap = new LinkedHashMap<String, List<String>>();
         var ammoDisplayMap = new LinkedHashMap<String, String>();
-        for (var ac : AMMO_CATEGORIES) {
-            for (var key : ac.keys) {
-                ammoShortNames.add(key);
-                String display = "§f" + key;
-                if (ammoReg != null) {
+        if (ammoReg != null && ammoReg.isLoaded()) {
+            categories.addAll(ammoReg.getAllCategories());
+            for (String cat : categories) {
+                List<String> keys = ammoReg.getShortNamesByCategory(cat);
+                catAmmoMap.put(cat, keys);
+                for (String key : keys) {
                     var info = ammoReg.getAmmoType(key);
-                    if (info != null) display = "§f" + info.displayName();
+                    ammoDisplayMap.put(key, info != null ? "§f" + info.displayName() : "§f" + key);
                 }
-                ammoDisplayMap.put(key, display);
             }
         }
+        // 无分类的弹药（兜底）
+        if (categories.isEmpty()) {
+            categories.add("弹药");
+            var all = new ArrayList<>(ammoReg != null ? ammoReg.getAllShortNames() : List.of());
+            Collections.sort(all);
+            catAmmoMap.put("弹药", all);
+            for (String key : all) {
+                ammoDisplayMap.put(key, "§f" + key);
+            }
+        }
+
+
+        // 最多显示 MAX_TABS 个 tab 按钮，多余用箭头翻页
+        final int MAX_TABS = 5; // 每页显示 5 个 tab 按钮
+        final int[] tabOffset = {0}; // 当前 tab 页偏移
+
+        // 收集所有弹药短名（用于遍历）
+        var allAmmoKeys = new ArrayList<>(ammoDisplayMap.keySet());
 
         TextField fieldScan = new TextField().setNumbersOnlyInt(0, 999999).setText("12"); fieldScan.setId("ammo_scanRange"); fieldScan.lss("width", 50);
         TextField fieldCool = new TextField().setNumbersOnlyInt(0, 999999).setText("5"); fieldCool.setId("ammo_cooldown"); fieldCool.lss("width", 50);
         TextField fieldEnter = new TextField().setNumbersOnlyInt(1, 999999).setText("3"); fieldEnter.setId("ammo_enterDelay"); fieldEnter.lss("width", 50);
 
         Map<String, TextField> slotFields = new LinkedHashMap<>();
-        for (String sn : ammoShortNames) {
+        for (String sn : allAmmoKeys) {
             TextField f = new TextField().setNumbersOnlyInt(0, 999999).setText("0");
             f.setId("ammo_slot_" + sn);
             f.lss("width", 50);
@@ -144,16 +139,21 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         p1.addChild(new Label().setText(tl("gui.siege_tools.ammo.hint.switch_tab")));
         tv.addTab(new Tab().setText(tl("gui.siege_tools.ammo.tab.basic")), p1);
 
-        // Ammo category tabs
-        for (var ac : AMMO_CATEGORIES) {
+        // 弹药分类页签：按 category 分组
+        for (String cat : categories) {
+            List<String> keys = catAmmoMap.get(cat);
+            if (keys == null || keys.isEmpty()) continue;
             UIElement page = new UIElement(); page.lss("padding", 2);
-            page.addChild(new Label().setText(tl(ac.sectionKey)));
-            for (var key : ac.keys) {
+            page.addChild(new Label().setText(Component.literal("§e" + cat)));
+            for (String key : keys) {
                 if (ammoDisplayMap.containsKey(key)) {
                     addRow(page, Component.literal(ammoDisplayMap.get(key) + ":"), slotFields.get(key), tl("gui.siege_tools.ammo.unit.count"));
                 }
             }
-            tv.addTab(new Tab().setText(tl(ac.sectionKey).getString().replaceAll("§.", "")), page);
+            // 截断 tab 名称
+            String tabLabel = cat.replaceAll("§.", "");
+            if (tabLabel.length() > 6) tabLabel = tabLabel.substring(0, 6);
+            tv.addTab(new Tab().setText(tabLabel), page);
         }
 
         // Cheat tab
@@ -175,7 +175,7 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         Button btnSave = new Button().setText(tl("gui.siege_tools.ammo.btn.save")); btnSave.lss("padding", "3 8");
         btnSave.setOnClick(e -> {
             Map<String, Integer> slotsMap = new HashMap<>();
-            for (String sn : ammoShortNames) {
+            for (String sn : allAmmoKeys) {
                 try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) slotsMap.put(sn, v); } catch (Exception ex) { }
             }
             PacketDistributor.sendToServer(C2SVehiclePacket.saveAmmo(

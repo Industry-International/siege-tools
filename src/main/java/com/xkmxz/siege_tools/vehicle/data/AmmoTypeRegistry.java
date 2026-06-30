@@ -48,8 +48,9 @@ public class AmmoTypeRegistry {
             String displayName = info.has("displayName") ? info.get("displayName").getAsString() : shortName;
             String enName = info.has("enName") ? info.get("enName").getAsString() : shortName;
             int maxStack = info.has("maxStack") ? info.get("maxStack").getAsInt() : 64;
+            String category = info.has("category") ? info.get("category").getAsString() : "";
 
-            AmmoTypeInfo typeInfo = new AmmoTypeInfo(id, displayName, enName, maxStack);
+            AmmoTypeInfo typeInfo = new AmmoTypeInfo(id, displayName, enName, maxStack, category);
             shortNameMap.put(shortName, typeInfo);
             fullIdMap.put(id, shortName);
         }
@@ -86,10 +87,33 @@ public class AmmoTypeRegistry {
         return byShortName.keySet();
     }
 
+    /** 获取所有分类名 */
+    public Set<String> getAllCategories() {
+        Set<String> cats = new LinkedHashSet<>();
+        for (AmmoTypeInfo info : byShortName.values()) {
+            if (info.category() != null && !info.category().isEmpty()) {
+                cats.add(info.category());
+            }
+        }
+        return cats;
+    }
+
+    /** 获取指定分类下的所有弹药短名（排序） */
+    public List<String> getShortNamesByCategory(String category) {
+        List<String> result = new ArrayList<>();
+        for (Map.Entry<String, AmmoTypeInfo> e : byShortName.entrySet()) {
+            if (category.equals(e.getValue().category())) {
+                result.add(e.getKey());
+            }
+        }
+        Collections.sort(result);
+        return result;
+    }
+
     /** 获取所有完整ID→短名的映射 */
     public Map<String, String> getFullIdMap() {
         return new HashMap<>(byFullId);
     }
 
-    public record AmmoTypeInfo(String id, String displayName, String enName, int maxStack) {}
+    public record AmmoTypeInfo(String id, String displayName, String enName, int maxStack, String category) {}
 }

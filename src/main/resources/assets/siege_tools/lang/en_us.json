@@ -1,6 +1,6 @@
 {
   "block.siege_tools.vehicle_deployer": "Vehicle Deployer",
-  "block.siege_tools.ammo_crate": "Ammo Crate",
+  "block.siege_tools.ammo_station": "Ammo Crate",
   "container.siege_tools.vehicle_deployer": "Vehicle Deployer",
   "container.siege_tools.ammo_station": "Ammo Station",
   "gui.siege_tools.deployer.title": "\u00a76\u2554 Vehicle Deployer \u2557",

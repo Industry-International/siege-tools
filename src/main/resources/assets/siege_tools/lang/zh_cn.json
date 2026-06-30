@@ -1,6 +1,6 @@
 {
   "block.siege_tools.vehicle_deployer": "载具部署台",
-  "block.siege_tools.ammo_crate": "弹药补给站",
+  "block.siege_tools.ammo_station": "弹药补给站",
   "container.siege_tools.vehicle_deployer": "载具部署台",
   "container.siege_tools.ammo_station": "弹药补给站",
   "gui.siege_tools.deployer.title": "§6╔ 载具部署台 ╗",
