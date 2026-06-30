@@ -67,7 +67,6 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
                         be.getYaw(), be.getPitch(),
                         be.getDeployNBT()
                 );
-                // 查找该载具所属分类（用于 GUI 下拉菜单位置恢复）
                 CompoundTag initData = cfg.toTag();
                 if (be.getVehicleType() != null && !be.getVehicleType().isEmpty()) {
                     var db = VehicleDataManager.getDatabase();
@@ -87,6 +86,12 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         return InteractionResult.SUCCESS;
     }
 
+    // ========== I18n helper ==========
+
+    private static Component tl(String key) { return Component.translatable(key); }
+
+    // ========== GUI ==========
+
     @Override
     public ModularUI createUI(BlockUIMenuType.BlockUIHolder holder) {
         Level level = holder.player.level();
@@ -94,29 +99,26 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         BlockEntity raw = level.getBlockEntity(pos);
         if (!(raw instanceof VehicleDeployerBlockEntity be)) return null;
 
-        // 注意：TextFields 初始值使用空字符串，真正数据由 S2CDeployerInitData 包推送后填充
-        TextField fieldVtype = new TextField(); fieldVtype.setId("deployer_vehicleType"); fieldVtype.lss("width", 180);
-        TextField fieldDelay = new TextField().setNumbersOnlyInt(20, 72000).setText("600"); fieldDelay.setId("deployer_respawnDelay"); fieldDelay.lss("width", 55);
-        TextField fieldAuto = new TextField().setNumbersOnlyInt(0, 1).setText("0"); fieldAuto.setId("deployer_autoRespawn"); fieldAuto.lss("width", 40);
-        TextField fieldAmmo = new TextField().setNumbersOnlyInt(0, 1).setText("1"); fieldAmmo.setId("deployer_spawnWithAmmo"); fieldAmmo.lss("width", 40);
-        TextField fieldOx = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOx.setId("deployer_offsetX"); fieldOx.lss("width", 50);
-        TextField fieldOy = new TextField().setNumbersOnlyInt(-999, 999).setText("1"); fieldOy.setId("deployer_offsetY"); fieldOy.lss("width", 50);
-        TextField fieldOz = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOz.setId("deployer_offsetZ"); fieldOz.lss("width", 50);
-        TextField fieldYaw = new TextField().setNumbersOnlyInt(-180, 180).setText("0"); fieldYaw.setId("deployer_yaw"); fieldYaw.lss("width", 50);
-        TextField fieldPitch = new TextField().setNumbersOnlyInt(-90, 90).setText("0"); fieldPitch.setId("deployer_pitch"); fieldPitch.lss("width", 50);
-        TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 250).lss("height", 80);
+        TextField fieldVtype = new TextField(); fieldVtype.setId("deployer_vehicleType"); fieldVtype.lss("width", 140);
+        TextField fieldDelay = new TextField().setNumbersOnlyInt(20, 72000).setText("600"); fieldDelay.setId("deployer_respawnDelay"); fieldDelay.lss("width", 50);
+        TextField fieldAuto = new TextField().setNumbersOnlyInt(0, 1).setText("0"); fieldAuto.setId("deployer_autoRespawn"); fieldAuto.lss("width", 35);
+        TextField fieldAmmo = new TextField().setNumbersOnlyInt(0, 1).setText("1"); fieldAmmo.setId("deployer_spawnWithAmmo"); fieldAmmo.lss("width", 35);
+        TextField fieldOx = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOx.setId("deployer_offsetX"); fieldOx.lss("width", 45);
+        TextField fieldOy = new TextField().setNumbersOnlyInt(-999, 999).setText("1"); fieldOy.setId("deployer_offsetY"); fieldOy.lss("width", 45);
+        TextField fieldOz = new TextField().setNumbersOnlyInt(-999, 999).setText("0"); fieldOz.setId("deployer_offsetZ"); fieldOz.lss("width", 45);
+        TextField fieldYaw = new TextField().setNumbersOnlyInt(-180, 180).setText("0"); fieldYaw.setId("deployer_yaw"); fieldYaw.lss("width", 45);
+        TextField fieldPitch = new TextField().setNumbersOnlyInt(-90, 90).setText("0"); fieldPitch.setId("deployer_pitch"); fieldPitch.lss("width", 45);
+        TextField fieldNBT = new TextField(); fieldNBT.setId("deployer_deployNBT"); fieldNBT.lss("width", 180).lss("height", 60);
 
-        // 简单 NBT 字段（从数据库默认值预填）
         TextField fieldNbtEnergy = new TextField().setNumbersOnlyInt(0, 999999999);
-        fieldNbtEnergy.setId("deployer_nbt_energy"); fieldNbtEnergy.lss("width", 80);
+        fieldNbtEnergy.setId("deployer_nbt_energy"); fieldNbtEnergy.lss("width", 70);
         TextField fieldNbtHealth = new TextField().setNumbersOnlyInt(0, 999999);
-        fieldNbtHealth.setId("deployer_nbt_health"); fieldNbtHealth.lss("width", 80);
+        fieldNbtHealth.setId("deployer_nbt_health"); fieldNbtHealth.lss("width", 70);
         TextField fieldNbtInvul = new TextField().setNumbersOnlyInt(0, 1);
-        fieldNbtInvul.setId("deployer_nbt_invul"); fieldNbtInvul.lss("width", 40);
+        fieldNbtInvul.setId("deployer_nbt_invul"); fieldNbtInvul.lss("width", 35);
         TextField fieldNbtDecoy = new TextField().setNumbersOnlyInt(0, 1);
-        fieldNbtDecoy.setId("deployer_nbt_decoy"); fieldNbtDecoy.lss("width", 40);
+        fieldNbtDecoy.setId("deployer_nbt_decoy"); fieldNbtDecoy.lss("width", 35);
 
-        // 类别/载具选择器
         Selector catSel = new Selector(); catSel.setId("deployer_category"); catSel.lss("width", "100%");
         Selector vehSel = new Selector(); vehSel.setId("deployer_vehicle"); vehSel.lss("width", "100%");
 
@@ -131,8 +133,9 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             }
         }
         if (categoryKeys.isEmpty()) {
-            categoryKeys.add("§c数据库未加载");
-            catData.put("§c数据库未加载", List.of("§c请保存配置后重启"));
+            categoryKeys.add(tl("gui.siege_tools.deployer.msg.no_db").getString());
+            catData.put(tl("gui.siege_tools.deployer.msg.no_db").getString(),
+                    List.of(tl("gui.siege_tools.deployer.msg.no_db_hint").getString()));
         }
         catSel.setCandidates(new ArrayList<>(categoryKeys));
         var firstVehs = catData.get(categoryKeys.get(0));
@@ -148,7 +151,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         vehSel.setOnValueChanged(newVid -> { if (newVid != null) fieldVtype.setText(newVid.toString()); });
 
         UIElement root = new UIElement(); root.lss("width", 200).lss("padding", 2);
-        var title = new Label().setText(Component.literal("§6╔ 载具部署台 ╗"));
+        var title = new Label().setText(tl("gui.siege_tools.deployer.title"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
         root.addChild(title);
@@ -156,40 +159,40 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
 
         TabView tv = new TabView();
 
-        // Tab 1: 载具选择
+        // Tab 1
         UIElement p1 = new UIElement(); p1.lss("padding", 2);
-        addRow(p1, "§7类别:", catSel, "");
-        addRow(p1, "§7载具:", vehSel, "");
-        addRow(p1, "§7ID:", fieldVtype, "");
-        p1.addChild(new Label().setText(Component.literal("§8从下拉选择或直接输入完整 ID")));
-        tv.addTab(new Tab().setText("载具"), p1);
+        addRow(p1, tl("gui.siege_tools.deployer.label.category"), catSel, Component.empty());
+        addRow(p1, tl("gui.siege_tools.deployer.label.vehicle"), vehSel, Component.empty());
+        addRow(p1, tl("gui.siege_tools.deployer.label.id"), fieldVtype, Component.empty());
+        p1.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.select")));
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.deployer.tab.vehicle")), p1);
 
-        // Tab 2: 基础设置
+        // Tab 2
         UIElement p2 = new UIElement(); p2.lss("padding", 2);
-        addRow(p2, "§7重生延迟:", fieldDelay, " §7tick");
-        p2.addChild(new Label().setText(Component.literal("§8(20t=1s 默认600=30s)")));
-        addRow(p2, "§7自动重生:", fieldAuto, " §7(1=开)");
-        addRow(p2, "§7带弹药:", fieldAmmo, " §7(1=是)");
-        tv.addTab(new Tab().setText("基础"), p2);
+        addRow(p2, tl("gui.siege_tools.deployer.label.delay"), fieldDelay, tl("gui.siege_tools.deployer.unit.tick"));
+        p2.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.delay")));
+        addRow(p2, tl("gui.siege_tools.deployer.label.auto_respawn"), fieldAuto, tl("gui.siege_tools.deployer.value.on"));
+        addRow(p2, tl("gui.siege_tools.deployer.label.spawn_ammo"), fieldAmmo, tl("gui.siege_tools.deployer.value.on"));
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.deployer.tab.basic")), p2);
 
-        // Tab 3: 坐标偏移
+        // Tab 3
         UIElement p3 = new UIElement(); p3.lss("padding", 2);
-        addRow(p3, "§7X偏移:", fieldOx, " 格"); addRow(p3, "§7Y偏移:", fieldOy, " 格"); addRow(p3, "§7Z偏移:", fieldOz, " 格");
-        addRow(p3, "§7朝向:", fieldYaw, " °"); addRow(p3, "§7俯仰:", fieldPitch, " °");
-        tv.addTab(new Tab().setText("坐标"), p3);
+        addRow(p3, tl("gui.siege_tools.deployer.label.offset_x"), fieldOx, tl("gui.siege_tools.deployer.unit.block"));
+        addRow(p3, tl("gui.siege_tools.deployer.label.offset_y"), fieldOy, tl("gui.siege_tools.deployer.unit.block"));
+        addRow(p3, tl("gui.siege_tools.deployer.label.offset_z"), fieldOz, tl("gui.siege_tools.deployer.unit.block"));
+        addRow(p3, tl("gui.siege_tools.deployer.label.yaw"), fieldYaw, tl("gui.siege_tools.deployer.unit.degree"));
+        addRow(p3, tl("gui.siege_tools.deployer.label.pitch"), fieldPitch, tl("gui.siege_tools.deployer.unit.degree"));
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.deployer.tab.pos")), p3);
 
-        // Tab 4: ⚙NBT简单
+        // Tab 4
         UIElement p4 = new UIElement(); p4.lss("padding", 2);
-        p4.addChild(new Label().setText(Component.literal("§7修改核心属性，留空用默认值")));
-        addRow(p4, "§eEnergy:", fieldNbtEnergy, "");
-        addRow(p4, "§eHealth:", fieldNbtHealth, "");
-        addRow(p4, "§eEnergy:", fieldNbtEnergy, "");
-        addRow(p4, "§eHealth:", fieldNbtHealth, "");
-        addRow(p4, "§eInvulnerable:", fieldNbtInvul, "");
-        addRow(p4, "§eDecoyReady:", fieldNbtDecoy, "");
-        // 应用数据库默认值按钮
+        p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.nbt_simple.hint")));
+        addRow(p4, tl("gui.siege_tools.deployer.label.energy"), fieldNbtEnergy, Component.empty());
+        addRow(p4, tl("gui.siege_tools.deployer.label.health"), fieldNbtHealth, Component.empty());
+        addRow(p4, tl("gui.siege_tools.deployer.label.invulnerable"), fieldNbtInvul, Component.empty());
+        addRow(p4, tl("gui.siege_tools.deployer.label.decoy_ready"), fieldNbtDecoy, Component.empty());
         Button btnApplyDefaults = new Button();
-        btnApplyDefaults.setText(Component.literal("§b⟳ 应用默认值"));
+        btnApplyDefaults.setText(tl("gui.siege_tools.deployer.btn.apply_defaults"));
         btnApplyDefaults.lss("padding", "2 6");
         btnApplyDefaults.setOnClick(e -> {
             String nbtJson = fieldNBT.getText();
@@ -205,21 +208,20 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             } catch (Exception ignored) {}
         });
         p4.addChild(btnApplyDefaults);
-        tv.addTab(new Tab().setText("⚙NBT"), p4);
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.deployer.tab.nbt_simple")), p4);
 
-        // Tab 5: ⚡NBT高级
+        // Tab 5
         UIElement p5 = new UIElement(); p5.lss("padding", 2);
-        p5.addChild(new Label().setText(Component.literal("§7自定义 deployNBT JSON，留空 {} 用默认值")));
+        p5.addChild(new Label().setText(tl("gui.siege_tools.deployer.nbt_advanced.hint")));
         p5.addChild(fieldNBT);
-        tv.addTab(new Tab().setText("⚡NBT上"), p5);
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.deployer.tab.nbt_advanced")), p5);
 
         root.addChild(tv);
         root.addChild(sep());
 
         UIElement btnRow = new UIElement();
-        Button btnSave = new Button().setText(Component.literal("§a✔ 保存")); btnSave.lss("padding", "3 10");
+        Button btnSave = new Button().setText(tl("gui.siege_tools.deployer.btn.save")); btnSave.lss("padding", "3 8");
         btnSave.setOnClick(e -> {
-            // 客户端读取当前字段值，解析 deployNBT JSON 为 CompoundTag
             String nbtStr = fieldNBT.getText();
             if (nbtStr.isEmpty()) nbtStr = "{}";
             CompoundTag parsed;
@@ -230,14 +232,13 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
             } catch (Exception ex) {
                 parsed = new CompoundTag();
             }
-            // 合并简单 NBT 字段（如果 ⚙NBT简单 中的值非空，覆盖到 deployNBT）
             try { int v = Integer.parseInt(fieldNbtEnergy.getText()); parsed.putInt("Energy", v); } catch (Exception ignored) {}
             try { int v = Integer.parseInt(fieldNbtHealth.getText()); parsed.putInt("Health", v); } catch (Exception ignored) {}
             try { int v = Integer.parseInt(fieldNbtInvul.getText()); parsed.putInt("Invulnerable", v); } catch (Exception ignored) {}
             try { int v = Integer.parseInt(fieldNbtDecoy.getText()); parsed.putInt("DecoyReady", v); } catch (Exception ignored) {}
             PacketDistributor.sendToServer(C2SVehiclePacket.saveDeployer(
                     holder.pos,
-                    new com.xkmxz.siege_tools.vehicle.network.DeployerConfigData(
+                    new DeployerConfigData(
                             fieldVtype.getText(),
                             Math.max(20, sInt(fieldDelay.getText(), 600)),
                             "1".equals(fieldAuto.getText()),
@@ -250,15 +251,14 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         });
         btnRow.addChild(btnSave);
 
-        Button btnReset = new Button().setText(Component.literal("§e↻ 重置")); btnReset.lss("padding", "3 10");
+        Button btnReset = new Button().setText(tl("gui.siege_tools.deployer.btn.reset")); btnReset.lss("padding", "3 8");
         btnReset.setOnClick(e -> {
             PacketDistributor.sendToServer(C2SVehiclePacket.resetDeployer(holder.pos));
         });
         btnRow.addChild(btnReset);
 
-        Button btnDeploy = new Button().setText(Component.literal("§6⚡ 立即部署")); btnDeploy.lss("padding", "3 10");
+        Button btnDeploy = new Button().setText(tl("gui.siege_tools.deployer.btn.deploy")); btnDeploy.lss("padding", "3 8");
         btnDeploy.setOnClick(e -> {
-            // 客户端发送触发部署网络包到服务端
             PacketDistributor.sendToServer(C2SVehiclePacket.triggerDeploy(holder.pos));
         });
         btnRow.addChild(btnDeploy);
@@ -268,8 +268,11 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         return ModularUI.of(UI.of(root), holder.player);
     }
 
-    private static Label sep() { Label s = new Label(); s.setText(Component.literal("§8————————————")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
-    private static void addRow(UIElement p, String label, UIElement f, String u) { UIElement r = new UIElement(); r.addChild(new Label().setText(Component.literal(label))); r.addChild(f); r.addChild(new Label().setText(Component.literal(u))); p.addChild(r); }
-    private static void addGap(UIElement p) { p.addChild(new Label().setText(Component.literal(" "))); }
+    // ========== Helpers ==========
+
+    private static Label sep() { Label s = new Label(); s.setText(tl("gui.siege_tools.deployer.separator")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
+    private static void addRow(UIElement p, Component label, UIElement f, Component unit) {
+        UIElement r = new UIElement(); r.addChild(new Label().setText(label)); r.addChild(f); r.addChild(new Label().setText(unit)); p.addChild(r);
+    }
     private static int sInt(String s, int d) { try { return Integer.parseInt(s); } catch (Exception e) { return d; } }
 }

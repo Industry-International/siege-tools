@@ -48,43 +48,42 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
 
     // 弹药分类定义（参照 KubeJS 布局分组）
     private static final class AmmoCat {
-        final String tabName, sectionTitle;
+        final String sectionKey;
         final List<String> keys;
-        AmmoCat(String tabName, String sectionTitle, List<String> keys) {
-            this.tabName = tabName; this.sectionTitle = sectionTitle; this.keys = keys;
+        AmmoCat(String sectionKey, List<String> keys) {
+            this.sectionKey = sectionKey; this.keys = keys;
         }
     }
     private static final List<AmmoCat> AMMO_CATEGORIES = List.of(
-        new AmmoCat("炮弹",    "大口径炮弹",
+        new AmmoCat("gui.siege_tools.ammo.section.large_shell",
             List.of("large_shell_ap", "large_shell_he", "large_shell_gs", "mortar_shell")),
-        new AmmoCat("小口径",  "小口径机炮弹",
+        new AmmoCat("gui.siege_tools.ammo.section.small_caliber",
             List.of("small_shell_ap", "small_shell_he", "small_shell_gs", "small_shell_aa")),
-        new AmmoCat("枪/火箭", "枪弹/火箭弹",
+        new AmmoCat("gui.siege_tools.ammo.section.gun_rocket",
             List.of("rifle_ammo", "heavy_ammo", "small_rocket", "rocket")),
-        new AmmoCat("导弹/航弹", "导弹/航弹",
+        new AmmoCat("gui.siege_tools.ammo.section.missile_bomb",
             List.of("missile", "medium_anti_ground_missile", "large_anti_ground_missile",
                     "medium_anti_air_missile", "medium_aerial_bomb", "small_aerial_bomb")),
-        new AmmoCat("§aMCSP(上)", "坦克炮/导弹",
+        new AmmoCat("gui.siege_tools.ammo.section.mcsp_tank",
             List.of("mcsp_125mm_ap", "mcsp_125mm_he", "mcsp_120mm_bulletmortar", "mcsp_tow_2", "mcsp_mlrs_shells")),
-        new AmmoCat("§aMCSP(下)", "机关炮/机枪",
+        new AmmoCat("gui.siege_tools.ammo.section.mcsp_gun",
             List.of("mcsp_25mm_ap", "mcsp_30mm_ap", "mcsp_40mm_explosive", "mcsp_40mm_smoke",
                     "mcsp_bullet762", "mcsp_smallarmscartridge"))
     );
+
+    private static Component tl(String key) { return Component.translatable(key); }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player instanceof ServerPlayer sp) {
             BlockUIMenuType.openUI(sp, pos);
-            // 发送 S2C 包，用服务端 BE 的真实数据初始化客户端 GUI 文本框
             BlockEntity raw = level.getBlockEntity(pos);
             if (raw instanceof AmmoCrateBlockEntity be) {
-                // slots Map → CompoundTag
                 net.minecraft.nbt.CompoundTag slotsTag = new net.minecraft.nbt.CompoundTag();
-                for (java.util.Map.Entry<String, Integer> entry : be.getSlots().entrySet()) {
+                for (Map.Entry<String, Integer> entry : be.getSlots().entrySet()) {
                     slotsTag.putInt(entry.getKey(), entry.getValue());
                 }
-                // 构建初始化数据包
                 net.minecraft.nbt.CompoundTag initData = new net.minecraft.nbt.CompoundTag();
                 initData.putInt("scanRange", be.getScanRange());
                 initData.putInt("cooldown", be.getCooldownSec());
@@ -101,12 +100,9 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         Level level = holder.player.level();
         BlockPos pos = holder.pos;
 
-        // ── 从数据库读取弹药类型 ──
         var ammoReg = VehicleDataManager.getAmmoTypes();
-        // ── 按弹药分类收集弹药短名 ──
         var ammoShortNames = new ArrayList<String>();
         var ammoDisplayMap = new LinkedHashMap<String, String>();
-        var ammoCatMap = new LinkedHashMap<String, String>(); // key → category tab name
         for (var ac : AMMO_CATEGORIES) {
             for (var key : ac.keys) {
                 ammoShortNames.add(key);
@@ -116,74 +112,69 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
                     if (info != null) display = "§f" + info.displayName();
                 }
                 ammoDisplayMap.put(key, display);
-                ammoCatMap.put(key, ac.tabName);
             }
         }
 
-        // 注意：TextFields 初始值使用空字符串，真正数据由 S2CAmmoCrateInitData 包推送后填充
-        TextField fieldScan = new TextField().setNumbersOnlyInt(0, 999999).setText("12"); fieldScan.setId("ammo_scanRange"); fieldScan.lss("width", 55);
-        TextField fieldCool = new TextField().setNumbersOnlyInt(0, 999999).setText("5"); fieldCool.setId("ammo_cooldown"); fieldCool.lss("width", 55);
-        TextField fieldEnter = new TextField().setNumbersOnlyInt(1, 999999).setText("3"); fieldEnter.setId("ammo_enterDelay"); fieldEnter.lss("width", 55);
+        TextField fieldScan = new TextField().setNumbersOnlyInt(0, 999999).setText("12"); fieldScan.setId("ammo_scanRange"); fieldScan.lss("width", 50);
+        TextField fieldCool = new TextField().setNumbersOnlyInt(0, 999999).setText("5"); fieldCool.setId("ammo_cooldown"); fieldCool.lss("width", 50);
+        TextField fieldEnter = new TextField().setNumbersOnlyInt(1, 999999).setText("3"); fieldEnter.setId("ammo_enterDelay"); fieldEnter.lss("width", 50);
 
         Map<String, TextField> slotFields = new LinkedHashMap<>();
         for (String sn : ammoShortNames) {
             TextField f = new TextField().setNumbersOnlyInt(0, 999999).setText("0");
             f.setId("ammo_slot_" + sn);
-            f.lss("width", 55);
+            f.lss("width", 50);
             slotFields.put(sn, f);
         }
 
-        // 紧凑布局
         UIElement root = new UIElement(); root.lss("width", 190).lss("padding", 2);
-        var title = new Label().setText(Component.literal("§6╔ 弹药补给站 ╗"));
+        var title = new Label().setText(tl("gui.siege_tools.ammo.title"));
         title.lss("width", "100%");
         title.textStyle(s -> s.textAlignHorizontal(Horizontal.CENTER));
         root.addChild(title);
-        root.addChild(sep());
+        root.addChild(sep_ammo());
 
         TabView tv = new TabView();
 
-        // Tab 1: 基础
+        // Tab 1
         UIElement p1 = new UIElement(); p1.lss("padding", 2);
-        addRow(p1, "§7扫描范围:", fieldScan, " §7格");
-        addRow(p1, "§7冷却时间:", fieldCool, " §7秒");
-        addRow(p1, "§7驶入等待:", fieldEnter, " §7秒");
-        p1.addChild(new Label().setText(Component.literal("§8← 切换标签页配置弹药")));
-        tv.addTab(new Tab().setText("基础"), p1);
+        addRow(p1, tl("gui.siege_tools.ammo.label.scan_range"), fieldScan, tl("gui.siege_tools.ammo.unit.block"));
+        addRow(p1, tl("gui.siege_tools.ammo.label.cooldown"), fieldCool, tl("gui.siege_tools.ammo.unit.second"));
+        addRow(p1, tl("gui.siege_tools.ammo.label.enter_delay"), fieldEnter, tl("gui.siege_tools.ammo.unit.second"));
+        p1.addChild(new Label().setText(tl("gui.siege_tools.ammo.hint.switch_tab")));
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.ammo.tab.basic")), p1);
 
-        // 弹药分类页签（按 AMMO_CATEGORIES 分组）
+        // Ammo category tabs
         for (var ac : AMMO_CATEGORIES) {
             UIElement page = new UIElement(); page.lss("padding", 2);
-            page.addChild(new Label().setText(Component.literal("§e" + ac.sectionTitle)));
+            page.addChild(new Label().setText(tl(ac.sectionKey)));
             for (var key : ac.keys) {
                 if (ammoDisplayMap.containsKey(key)) {
-                    addRow(page, ammoDisplayMap.get(key) + ":", slotFields.get(key), " 个");
+                    addRow(page, Component.literal(ammoDisplayMap.get(key) + ":"), slotFields.get(key), tl("gui.siege_tools.ammo.unit.count"));
                 }
             }
-            tv.addTab(new Tab().setText(ac.tabName), page);
+            tv.addTab(new Tab().setText(tl(ac.sectionKey).getString().replaceAll("§.", "")), page);
         }
 
-        // 作弊页
+        // Cheat tab
         UIElement cp = new UIElement(); cp.lss("padding", 2);
-        cp.addChild(new Label().setText(Component.literal("§c── 作弊功能 ──")));
+        cp.addChild(new Label().setText(tl("gui.siege_tools.ammo.cheat.title")));
         if (holder.player.hasPermissions(2)) {
-            addGap(cp);
-            Button btnT = new Button().setText(Component.literal("§6⇄ 切换作弊模式")); btnT.lss("padding", "3 10");
+            Button btnT = new Button().setText(tl("gui.siege_tools.ammo.btn.cheat_toggle")); btnT.lss("padding", "3 8");
             btnT.setOnClick(e -> {
                 PacketDistributor.sendToServer(C2SVehiclePacket.toggleCheat(holder.pos));
             });
             cp.addChild(btnT);
-        } else { addGap(cp); cp.addChild(new Label().setText(Component.literal("§c你没有权限使用作弊功能"))); }
-        tv.addTab(new Tab().setText("§c作弊"), cp);
+        } else { cp.addChild(new Label().setText(tl("gui.siege_tools.ammo.cheat.no_perm"))); }
+        tv.addTab(new Tab().setText(tl("gui.siege_tools.ammo.tab.cheat")), cp);
 
         root.addChild(tv);
-        root.addChild(sep());
+        root.addChild(sep_ammo());
 
-        // 保存/重置按钮
         UIElement btnRow = new UIElement();
-        Button btnSave = new Button().setText(Component.literal("§a✔ 保存配置")); btnSave.lss("padding", "3 10");
+        Button btnSave = new Button().setText(tl("gui.siege_tools.ammo.btn.save")); btnSave.lss("padding", "3 8");
         btnSave.setOnClick(e -> {
-            java.util.Map<String, Integer> slotsMap = new java.util.HashMap<>();
+            Map<String, Integer> slotsMap = new HashMap<>();
             for (String sn : ammoShortNames) {
                 try { int v = Integer.parseInt(slotFields.get(sn).getText()); if (v > 0) slotsMap.put(sn, v); } catch (Exception ex) { }
             }
@@ -197,7 +188,7 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         });
         btnRow.addChild(btnSave);
 
-        Button btnReset = new Button().setText(Component.literal("§e↻ 重置默认")); btnReset.lss("padding", "3 10");
+        Button btnReset = new Button().setText(tl("gui.siege_tools.ammo.btn.reset")); btnReset.lss("padding", "3 8");
         btnReset.setOnClick(e -> {
             PacketDistributor.sendToServer(C2SVehiclePacket.resetAmmo(holder.pos));
         });
@@ -208,8 +199,9 @@ public class AmmoCrateBlock extends BaseEntityBlock implements BlockUIMenuType.B
         return ModularUI.of(UI.of(root), holder.player);
     }
 
-    private static Label sep() { Label s = new Label(); s.setText(Component.literal("§8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
-    private static void addRow(UIElement p, String label, UIElement f, String u) { UIElement r = new UIElement(); r.addChild(new Label().setText(Component.literal(label))); r.addChild(f); r.addChild(new Label().setText(Component.literal(u))); p.addChild(r); }
-    private static void addGap(UIElement p) { p.addChild(new Label().setText(Component.literal(" "))); }
+    private static Label sep_ammo() { Label s = new Label(); s.setText(Component.translatable("gui.siege_tools.deployer.separator")); s.lss("width", "100%").lss("overflow", "hidden"); return s; }
+    private static void addRow(UIElement p, Component label, UIElement f, Component unit) {
+        UIElement r = new UIElement(); r.addChild(new Label().setText(label)); r.addChild(f); r.addChild(new Label().setText(unit)); p.addChild(r);
+    }
     private static int sInt(String s, int d) { try { return Math.max(0, Integer.parseInt(s)); } catch (Exception e) { return d; } }
 }

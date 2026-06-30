@@ -114,7 +114,7 @@ public record C2SVehiclePacket(
     private static void handleSaveDeployer(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof VehicleDeployerBlockEntity be)) return;
         be.applyConfig(DeployerConfigData.fromTag(pkt.data));
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 配置已保存！"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.save_success"), false);
     }
 
     private static void handleSaveAmmo(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
@@ -123,35 +123,35 @@ public record C2SVehiclePacket(
         int cooldown = pkt.data.getInt("cooldown");
         int enterDelay = pkt.data.getInt("enterDelay");
         be.applyConfig(scanRange, cooldown, enterDelay, readSlotsMap(pkt.data));
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 配置已保存！冷却已重置"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.save_ammo_success"), false);
     }
 
     private static void handleTriggerDeploy(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof VehicleDeployerBlockEntity be)) return;
         if (be.getVehicleType() == null || be.getVehicleType().isEmpty()) {
-            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c[部署台] 请先配置载具类型"), false);
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.no_vehicle"), false);
             return;
         }
         be.setPendingDeploy(true);
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§e⏳ 部署命令已提交，将在下次 Tick 执行"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.deploy_pending"), false);
     }
 
     private static void handleToggleCheat(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof AmmoCrateBlockEntity be)) return;
         be.setCheatMode(!be.isCheatMode());
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§6[弹药补给站] 作弊模式已切换"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.cheat_toggled"), false);
     }
 
     private static void handleResetAmmo(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof AmmoCrateBlockEntity be)) return;
         be.resetConfig();
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 已重置为默认配置"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.reset_success"), false);
     }
 
     private static void handleResetDeployer(C2SVehiclePacket pkt, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pkt.pos) instanceof VehicleDeployerBlockEntity be)) return;
         be.resetConfig();
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a✔ 已重置为默认配置"), false);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.siege_tools.reset_success"), false);
     }
 
     private static CompoundTag ammoConfigToTag(int scanRange, int cooldown, int enterDelay, Map<String, Integer> slots) {
