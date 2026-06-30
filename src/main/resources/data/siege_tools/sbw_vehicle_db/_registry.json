@@ -23,14 +23,14 @@
       "displayName": "火炮/火箭炮",
       "description": "Artillery & Rocket Artillery",
       "files": [
+        "mcsp--tos_1a_green.json",
+        "mcsp--tos_1a_tricolor.json",
         "superbwarfare--annihilator.json",
         "superbwarfare--bl_132.json",
         "superbwarfare--mk_42.json",
         "superbwarfare--mle_1934.json",
         "superbwarfare--mortar.json",
-        "superbwarfare--type_63.json",
-        "mcsp--tos_1a_green.json",
-        "mcsp--tos_1a_tricolor.json"
+        "superbwarfare--type_63.json"
       ]
     },
     "defense_turret": {
@@ -62,32 +62,26 @@
       "displayName": "步兵战车/装甲车",
       "description": "Infantry Fighting Vehicles & APCs",
       "files": [
-        "superbwarfare--bmp_2.json",
-        "superbwarfare--bradley.json",
-        "superbwarfare--lav_150.json",
-        "superbwarfare--lav_25.json",
         "mcsp--bmd_4.json",
         "mcsp--bmd_4_camo.json",
         "mcsp--m3a3_bradley.json",
         "mcsp--m3a3_bradley_busk_ii.json",
+        "mcsp--m3a3_bradley_busk_ii_sand.json",
         "mcsp--m3a3_bradley_busk_iii.json",
         "mcsp--m3a3_bradley_busk_iii_sand.json",
-        "mcsp--m3a3_bradley_busk_ii_sand.json",
         "mcsp--m3a3_bradley_sand.json",
         "mcsp--zbd04a_green.json",
-        "mcsp--zbd04a_sand.json"
+        "mcsp--zbd04a_sand.json",
+        "superbwarfare--bmp_2.json",
+        "superbwarfare--bradley.json",
+        "superbwarfare--lav_150.json",
+        "superbwarfare--lav_25.json"
       ]
     },
     "main_battle_tank": {
       "displayName": "主战坦克",
       "description": "Main Battle Tanks",
       "files": [
-        "superbwarfare--m_1a_2.json",
-        "superbwarfare--plz_05.json",
-        "superbwarfare--prism_tank.json",
-        "superbwarfare--t_90a.json",
-        "superbwarfare--yx_100.json",
-        "superbwarfare--ztz_99a.json",
         "mcsp--m1a2.json",
         "mcsp--m1a2_sand.json",
         "mcsp--m1a2_sep.json",
@@ -104,7 +98,13 @@
         "mcsp--t80u_pixel.json",
         "mcsp--t90a_green.json",
         "mcsp--t90a_tricolor.json",
-        "mcsp--ztz99a_sand.json"
+        "mcsp--ztz99a_sand.json",
+        "superbwarfare--m_1a_2.json",
+        "superbwarfare--plz_05.json",
+        "superbwarfare--prism_tank.json",
+        "superbwarfare--t_90a.json",
+        "superbwarfare--yx_100.json",
+        "superbwarfare--ztz_99a.json"
       ]
     },
     "naval": {
@@ -119,12 +119,6 @@
       "displayName": "多功能车/运输车",
       "description": "Utility Vehicles & Trucks",
       "files": [
-        "superbwarfare--sodayo_pick_up.json",
-        "superbwarfare--sodayo_pick_up_hmg.json",
-        "superbwarfare--sodayo_pick_up_rocket.json",
-        "superbwarfare--sodayo_pick_up_tow.json",
-        "superbwarfare--truck.json",
-        "superbwarfare--wheel_chair.json",
         "mcsp--humvee_carc.json",
         "mcsp--humvee_mk19.json",
         "mcsp--humvee_sand.json",
@@ -132,7 +126,13 @@
         "mcsp--typhoon_30.json",
         "mcsp--typhoon_tricolor_30.json",
         "mcsp--ural_green.json",
-        "mcsp--ural_tricolor.json"
+        "mcsp--ural_tricolor.json",
+        "superbwarfare--sodayo_pick_up.json",
+        "superbwarfare--sodayo_pick_up_hmg.json",
+        "superbwarfare--sodayo_pick_up_rocket.json",
+        "superbwarfare--sodayo_pick_up_tow.json",
+        "superbwarfare--truck.json",
+        "superbwarfare--wheel_chair.json"
       ]
     }
   }
