@@ -188,9 +188,13 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         UIElement p4 = new UIElement(); p4.lss("padding", 2);
         p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.nbt_simple.hint")));
         addRow(p4, tl("gui.siege_tools.deployer.label.energy"), fieldNbtEnergy, Component.empty());
+        p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.energy")));
         addRow(p4, tl("gui.siege_tools.deployer.label.health"), fieldNbtHealth, Component.empty());
+        p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.health")));
         addRow(p4, tl("gui.siege_tools.deployer.label.invulnerable"), fieldNbtInvul, Component.empty());
+        p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.invulnerable")));
         addRow(p4, tl("gui.siege_tools.deployer.label.decoy_ready"), fieldNbtDecoy, Component.empty());
+        p4.addChild(new Label().setText(tl("gui.siege_tools.deployer.hint.decoy_ready")));
         Button btnApplyDefaults = new Button();
         btnApplyDefaults.setText(tl("gui.siege_tools.deployer.btn.apply_defaults"));
         btnApplyDefaults.lss("padding", "2 6");
