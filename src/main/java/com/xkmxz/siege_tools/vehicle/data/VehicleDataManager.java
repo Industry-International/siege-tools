@@ -31,7 +31,7 @@ public class VehicleDataManager {
     }
 
     /** 通过车辆 ID 获取车辆数据 */
-    public static com.google.gson.JsonObject getVehicle(String vehicleId) {
+    public static VehicleData getVehicle(String vehicleId) {
         return currentDatabase.getVehicle(vehicleId);
     }
 

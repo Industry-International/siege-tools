@@ -1,36 +1,38 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:tow",
   "mod": "superbwarfare",
-  "category": "defense_turret",
-  "baseName": "tow",
   "displayType": "Defense",
-  "maxHealth": 60,
-  "maxEnergy": 10000000,
-  "hasDecoy": false,
-  "engineType": "Fixed",
-  "mass": 0.05,
-  "upStep": 0,
-  "containerType": "Empty",
   "hudType": null,
+  "stats": {
+    "maxHealth": 60,
+    "maxEnergy": 10000000,
+    "mass": 0.05,
+    "upStep": 0,
+    "seatCount": 0,
+    "containerType": "Empty",
+    "engineType": "Fixed",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 0,
   "weapons": [
     {
       "key": "Missile",
-      "displayKey": "Missile",
       "ammoTypes": [
         "superbwarfare:medium_anti_ground_missile"
       ],
       "magazine": 1,
       "rpm": 8,
-      "damage": 600,
-      "hasOverride": false
+      "damage": 600
     }
   ],
-  "nbtTemplate": {
+  "defaultAmmo": {
+    "superbwarfare:medium_anti_ground_missile": 16
+  },
+  "spawnNbt": {
     "Energy": 10000000,
     "Health": 60,
     "Invulnerable": 0,
@@ -43,29 +45,6 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Missile": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    },
-    "Inventory": {
-      "Items": [
-        {
-          "Slot": 0,
-          "count": 16,
-          "id": "superbwarfare:medium_anti_ground_missile"
-        }
-      ]
-    }
-  },
-  "ammoSlots": {
-    "superbwarfare:medium_anti_ground_missile": 16
+    "TurretBurnTimer": 0
   }
 }

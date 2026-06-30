@@ -1,0 +1,77 @@
+{
+  "vehicleId": "mcsp:tos_1a_green",
+  "mod": "mcsp",
+  "category": "artillery",
+  "baseName": "tos_1a_green",
+  "displayType": "Artillery",
+  "maxHealth": 350,
+  "maxEnergy": 20000000,
+  "hasDecoy": true,
+  "engineType": "Track",
+  "mass": 46,
+  "upStep": 2,
+  "containerType": "Empty",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "Body",
+    "Turret"
+  ],
+  "seatCount": 1,
+  "weapons": [
+    {
+      "key": "TOS",
+      "displayKey": "TOS",
+      "ammoTypes": [
+        "mcsp:mlrs_shells"
+      ],
+      "magazine": 21,
+      "rpm": 200,
+      "damage": 150,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 20000000,
+    "Health": 350,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "BodyHealth": 100,
+    "BodyDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "TOS": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "mcsp:mlrs_shells"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "mcsp:mlrs_shells": 32
+  }
+}

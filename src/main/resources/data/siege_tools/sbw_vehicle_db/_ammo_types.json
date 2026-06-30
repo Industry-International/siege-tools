@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "_comment": "弹药类型注册表 — 补给站和数据库共享。所有可被弹药补给站识别的弹药类型在此注册。",
+  "formatVersion": 1,
+  "_comment": "弹药类型注册表。所有可被弹药补给站识别的弹药类型在此注册。",
   "ammoTypes": {
     "large_shell_ap": {
       "id": "superbwarfare:large_shell_ap",

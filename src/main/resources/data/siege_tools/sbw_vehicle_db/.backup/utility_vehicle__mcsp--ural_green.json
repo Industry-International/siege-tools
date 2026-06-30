@@ -1,0 +1,38 @@
+{
+  "vehicleId": "mcsp:ural_green",
+  "mod": "mcsp",
+  "category": "utility_vehicle",
+  "baseName": "ural_green",
+  "displayType": "Car",
+  "maxHealth": 250,
+  "maxEnergy": 5000000,
+  "hasDecoy": false,
+  "engineType": "Wheel",
+  "mass": 20,
+  "upStep": 1.5,
+  "containerType": "Huge",
+  "hudType": null,
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "Interactive"
+  ],
+  "seatCount": 10,
+  "weapons": [],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 250,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "InteractiveHealth": 100,
+    "InteractiveDamaged": 0
+  },
+  "ammoSlots": {}
+}

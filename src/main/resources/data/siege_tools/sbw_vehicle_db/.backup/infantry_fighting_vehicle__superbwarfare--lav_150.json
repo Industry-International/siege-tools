@@ -1,0 +1,117 @@
+{
+  "vehicleId": "superbwarfare:lav_150",
+  "mod": "superbwarfare",
+  "category": "infantry_fighting_vehicle",
+  "baseName": "lav_150",
+  "displayType": "APC",
+  "maxHealth": 270,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Wheel",
+  "mass": 13.6,
+  "upStep": 1.5,
+  "containerType": "Medium",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "MainEngine",
+    "Turret"
+  ],
+  "seatCount": 5,
+  "weapons": [
+    {
+      "key": "Cannon",
+      "displayKey": "Cannon",
+      "ammoTypes": [
+        "superbwarfare:small_shell_ap",
+        "superbwarfare:small_shell_he",
+        "superbwarfare:small_shell_gs"
+      ],
+      "magazine": 1,
+      "rpm": 300,
+      "damage": 45,
+      "hasOverride": true
+    },
+    {
+      "key": "MachineGun",
+      "displayKey": "MachineGun",
+      "ammoTypes": [
+        "superbwarfare:rifle_ammo"
+      ],
+      "magazine": 1,
+      "rpm": 600,
+      "damage": 9.5,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 270,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "MainEngineHealth": 150,
+    "MainEngineDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "superbwarfare:small_shell_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 32,
+          "id": "superbwarfare:small_shell_he"
+        },
+        {
+          "Slot": 2,
+          "count": 32,
+          "id": "superbwarfare:small_shell_gs"
+        },
+        {
+          "Slot": 3,
+          "count": 192,
+          "id": "superbwarfare:rifle_ammo"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:small_shell_ap": 32,
+    "superbwarfare:small_shell_he": 32,
+    "superbwarfare:small_shell_gs": 32,
+    "superbwarfare:rifle_ammo": 192
+  }
+}

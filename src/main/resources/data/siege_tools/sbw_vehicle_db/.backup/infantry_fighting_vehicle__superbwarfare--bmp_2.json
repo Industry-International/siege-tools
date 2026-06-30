@@ -1,0 +1,271 @@
+{
+  "vehicleId": "superbwarfare:bmp_2",
+  "mod": "superbwarfare",
+  "category": "infantry_fighting_vehicle",
+  "baseName": "bmp_2",
+  "displayType": "APC",
+  "maxHealth": 300,
+  "maxEnergy": 5000000,
+  "hasDecoy": true,
+  "engineType": "Track",
+  "mass": 14.6,
+  "upStep": 2.25,
+  "containerType": "Medium",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "MainEngine",
+    "Turret"
+  ],
+  "seatCount": 7,
+  "weapons": [
+    {
+      "key": "Cannon",
+      "displayKey": "Cannon",
+      "ammoTypes": [
+        "superbwarfare:small_shell_ap",
+        "superbwarfare:small_shell_he",
+        "superbwarfare:small_shell_gs"
+      ],
+      "magazine": 1,
+      "rpm": 250,
+      "damage": 65,
+      "hasOverride": true
+    },
+    {
+      "key": "MainMachineGun",
+      "displayKey": "MainMachineGun",
+      "ammoTypes": [
+        "superbwarfare:rifle_ammo"
+      ],
+      "magazine": 1,
+      "rpm": 600,
+      "damage": 9.5,
+      "hasOverride": false
+    },
+    {
+      "key": "Missile",
+      "displayKey": "Missile",
+      "ammoTypes": [
+        "superbwarfare:medium_anti_ground_missile"
+      ],
+      "magazine": 1,
+      "rpm": null,
+      "damage": 600,
+      "hasOverride": false
+    },
+    {
+      "key": "MG",
+      "displayKey": "@MG",
+      "ammoTypes": [
+        "superbwarfare:rifle_ammo"
+      ],
+      "magazine": 1,
+      "rpm": 600,
+      "damage": 9.5,
+      "hasOverride": false
+    },
+    {
+      "key": "MG1",
+      "displayKey": "MG1",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "MG2",
+      "displayKey": "MG2",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "MG3",
+      "displayKey": "MG3",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "MG4",
+      "displayKey": "MG4",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "MG5",
+      "displayKey": "MG5",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    },
+    {
+      "key": "MG6",
+      "displayKey": "MG6",
+      "ammoTypes": [],
+      "magazine": 1,
+      "rpm": null,
+      "damage": null,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 300,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "MainEngineHealth": 150,
+    "MainEngineDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MainMachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "Missile": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG1": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG2": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG3": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG4": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG5": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MG6": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "superbwarfare:small_shell_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 32,
+          "id": "superbwarfare:small_shell_he"
+        },
+        {
+          "Slot": 2,
+          "count": 32,
+          "id": "superbwarfare:small_shell_gs"
+        },
+        {
+          "Slot": 3,
+          "count": 192,
+          "id": "superbwarfare:rifle_ammo"
+        },
+        {
+          "Slot": 4,
+          "count": 16,
+          "id": "superbwarfare:medium_anti_ground_missile"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:small_shell_ap": 32,
+    "superbwarfare:small_shell_he": 32,
+    "superbwarfare:small_shell_gs": 32,
+    "superbwarfare:rifle_ammo": 192,
+    "superbwarfare:medium_anti_ground_missile": 16
+  }
+}

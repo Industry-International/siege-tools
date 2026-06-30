@@ -104,8 +104,8 @@ public class VehicleDeployerBlock extends BaseEntityBlock implements BlockUIMenu
         if (db.isLoaded()) {
             for (String ck : db.getAllCategoryKeys()) {
                 var ci = db.getCategories().get(ck);
-                categoryKeys.add(ci.getDisplayName());
-                catData.put(ci.getDisplayName(), db.getVehiclesByCategory(ck));
+                categoryKeys.add(ci.displayName());
+                catData.put(ci.displayName(), db.getVehiclesByCategory(ck));
             }
         }
         if (categoryKeys.isEmpty()) {

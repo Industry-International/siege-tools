@@ -1,0 +1,184 @@
+{
+  "vehicleId": "superbwarfare:yx_100",
+  "mod": "superbwarfare",
+  "category": "main_battle_tank",
+  "baseName": "yx_100",
+  "displayType": "Tank",
+  "maxHealth": 800,
+  "maxEnergy": 20000000,
+  "hasDecoy": true,
+  "engineType": "Track",
+  "mass": 100,
+  "upStep": 2.6,
+  "containerType": "Medium",
+  "hudType": "@Land",
+  "parts": [
+    "WheelRight",
+    "WheelLeft",
+    "MainEngine",
+    "Turret"
+  ],
+  "seatCount": 5,
+  "weapons": [
+    {
+      "key": "Cannon",
+      "displayKey": "Cannon",
+      "ammoTypes": [
+        "superbwarfare:large_shell_ap",
+        "superbwarfare:large_shell_he",
+        "superbwarfare:large_shell_gs"
+      ],
+      "magazine": 1,
+      "rpm": null,
+      "damage": 1500,
+      "hasOverride": true
+    },
+    {
+      "key": "MachineGun",
+      "displayKey": "MachineGun",
+      "ammoTypes": [
+        "superbwarfare:heavy_ammo"
+      ],
+      "magazine": 1,
+      "rpm": 450,
+      "damage": 40,
+      "hasOverride": false
+    },
+    {
+      "key": "PassengerCannon",
+      "displayKey": "PassengerCannon",
+      "ammoTypes": [
+        "superbwarfare:small_shell_ap",
+        "superbwarfare:small_shell_he",
+        "superbwarfare:small_shell_gs"
+      ],
+      "magazine": 1,
+      "rpm": 300,
+      "damage": 60,
+      "hasOverride": true
+    },
+    {
+      "key": "SwarmDrone",
+      "displayKey": "SwarmDrone",
+      "ammoTypes": [
+        "superbwarfare:swarm_drone",
+        "superbwarfare:swarm_drone"
+      ],
+      "magazine": 14,
+      "rpm": 600,
+      "damage": null,
+      "hasOverride": true
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 20000000,
+    "Health": 800,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "MainEngineHealth": 150,
+    "MainEngineDamaged": 0,
+    "TurretHealth": 100,
+    "TurretDamaged": 0,
+    "TurretBurned": 0,
+    "TurretBurnTimer": 0,
+    "WeaponState": {
+      "Cannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "MachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "PassengerCannon": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      },
+      "SwarmDrone": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 32,
+          "id": "superbwarfare:large_shell_ap"
+        },
+        {
+          "Slot": 1,
+          "count": 32,
+          "id": "superbwarfare:large_shell_he"
+        },
+        {
+          "Slot": 2,
+          "count": 32,
+          "id": "superbwarfare:large_shell_gs"
+        },
+        {
+          "Slot": 3,
+          "count": 128,
+          "id": "superbwarfare:heavy_ammo"
+        },
+        {
+          "Slot": 4,
+          "count": 32,
+          "id": "superbwarfare:small_shell_ap"
+        },
+        {
+          "Slot": 5,
+          "count": 32,
+          "id": "superbwarfare:small_shell_he"
+        },
+        {
+          "Slot": 6,
+          "count": 32,
+          "id": "superbwarfare:small_shell_gs"
+        },
+        {
+          "Slot": 7,
+          "count": 64,
+          "id": "superbwarfare:swarm_drone"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:large_shell_ap": 32,
+    "superbwarfare:large_shell_he": 32,
+    "superbwarfare:large_shell_gs": 32,
+    "superbwarfare:heavy_ammo": 128,
+    "superbwarfare:small_shell_ap": 32,
+    "superbwarfare:small_shell_he": 32,
+    "superbwarfare:small_shell_gs": 32,
+    "superbwarfare:swarm_drone": 64
+  }
+}

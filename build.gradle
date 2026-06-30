@@ -114,6 +114,7 @@ dependencies {
     implementation files("libs/geckolib-neoforge-1.21.1-4.9.1.jar")
     implementation files("libs/ldlib2-neoforge-1.21.1-2.2.24-all.jar")
     implementation files("libs/NBTcopy-NEOFORGE-1.21-1.0.4.jar")
+    implementation files("libs/MCSP-1.21.1-V1.0.9.jar")
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
 

@@ -1,61 +1,59 @@
 {
+  "formatVersion": 1,
   "vehicleId": "mcsp:m1a2_sand",
   "mod": "mcsp",
-  "category": "main_battle_tank",
-  "baseName": "m1a2_sand",
   "displayType": "Tank",
-  "maxHealth": 500,
-  "maxEnergy": 5000000,
-  "hasDecoy": true,
-  "engineType": "Track",
-  "mass": 60,
-  "upStep": 2.25,
-  "containerType": null,
   "hudType": "@Land",
+  "stats": {
+    "maxHealth": 500,
+    "maxEnergy": 5000000,
+    "mass": 60,
+    "upStep": 2.25,
+    "seatCount": 2,
+    "engineType": "Track",
+    "hasDecoy": true
+  },
   "parts": [
     "WheelRight",
     "WheelLeft",
     "Turret",
     "WeaponStationBarrel"
   ],
-  "seatCount": 2,
   "weapons": [
     {
       "key": "Cannon",
-      "displayKey": "Cannon",
       "ammoTypes": [
         "mcsp:125mm_ap",
         "mcsp:125mm_he"
       ],
       "magazine": 1,
-      "rpm": null,
-      "damage": 800,
-      "hasOverride": true
+      "damage": 800
     },
     {
       "key": "MachineGun",
-      "displayKey": "MachineGun",
       "ammoTypes": [
         "mcsp:bullet762"
       ],
       "magazine": 1,
       "rpm": 450,
-      "damage": 40,
-      "hasOverride": false
+      "damage": 40
     },
     {
       "key": "PassengerMachineGun",
-      "displayKey": "PassengerMachineGun",
       "ammoTypes": [
         "mcsp:bullet762"
       ],
       "magazine": 1,
       "rpm": 450,
-      "damage": 40,
-      "hasOverride": false
+      "damage": 40
     }
   ],
-  "nbtTemplate": {
+  "defaultAmmo": {
+    "mcsp:125mm_ap": 128,
+    "mcsp:125mm_he": 128,
+    "mcsp:bullet762": 256
+  },
+  "spawnNbt": {
     "Energy": 5000000,
     "Health": 500,
     "Invulnerable": 0,
@@ -72,59 +70,6 @@
     "WeaponStationBarrelHealth": 100,
     "WeaponStationBarrelDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Cannon": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "MachineGun": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "PassengerMachineGun": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    },
-    "Inventory": {
-      "Items": [
-        {
-          "Slot": 0,
-          "count": 128,
-          "id": "mcsp:125mm_ap"
-        },
-        {
-          "Slot": 1,
-          "count": 128,
-          "id": "mcsp:125mm_he"
-        },
-        {
-          "Slot": 2,
-          "count": 256,
-          "id": "mcsp:bullet762"
-        }
-      ]
-    }
-  },
-  "ammoSlots": {
-    "mcsp:125mm_ap": 128,
-    "mcsp:125mm_he": 128,
-    "mcsp:bullet762": 256
+    "TurretBurnTimer": 0
   }
 }

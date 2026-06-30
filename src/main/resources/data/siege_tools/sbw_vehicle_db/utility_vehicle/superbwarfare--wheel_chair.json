@@ -1,24 +1,24 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:wheel_chair",
   "mod": "superbwarfare",
-  "category": "utility_vehicle",
-  "baseName": "wheel_chair",
   "displayType": "Car",
-  "maxHealth": 30,
-  "maxEnergy": 24000,
-  "hasDecoy": false,
-  "engineType": "WheelChair",
-  "mass": 0.03,
-  "upStep": 1.1,
-  "containerType": "Empty",
   "hudType": null,
+  "stats": {
+    "maxHealth": 30,
+    "maxEnergy": 24000,
+    "mass": 0.03,
+    "upStep": 1.1,
+    "seatCount": 0,
+    "containerType": "Empty",
+    "engineType": "WheelChair",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 0,
-  "weapons": [],
-  "nbtTemplate": {
+  "spawnNbt": {
     "Energy": 24000,
     "Health": 30,
     "Invulnerable": 0,
@@ -32,6 +32,5 @@
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
     "TurretBurnTimer": 0
-  },
-  "ammoSlots": {}
+  }
 }

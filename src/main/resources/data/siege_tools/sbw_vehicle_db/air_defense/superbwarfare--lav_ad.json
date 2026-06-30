@@ -1,49 +1,50 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:lav_ad",
   "mod": "superbwarfare",
-  "category": "air_defense",
-  "baseName": "lav_ad",
   "displayType": "AA",
-  "maxHealth": 300,
-  "maxEnergy": 5000000,
-  "hasDecoy": true,
-  "engineType": "Wheel",
-  "mass": 16,
-  "upStep": 1.5,
-  "containerType": "Medium",
   "hudType": "@Land",
+  "stats": {
+    "maxHealth": 300,
+    "maxEnergy": 5000000,
+    "mass": 16,
+    "upStep": 1.5,
+    "seatCount": 5,
+    "containerType": "Medium",
+    "engineType": "Wheel",
+    "hasDecoy": true
+  },
   "parts": [
     "WheelRight",
     "WheelLeft",
     "MainEngine",
     "Turret"
   ],
-  "seatCount": 5,
   "weapons": [
     {
       "key": "Cannon",
-      "displayKey": "Cannon",
       "ammoTypes": [
         "superbwarfare:small_shell_aa"
       ],
       "magazine": 1,
       "rpm": 1200,
-      "damage": 23,
-      "hasOverride": false
+      "damage": 23
     },
     {
       "key": "FimMissile",
-      "displayKey": "FimMissile",
       "ammoTypes": [
         "superbwarfare:medium_anti_air_missile"
       ],
       "magazine": 8,
       "rpm": 30,
-      "damage": 260,
-      "hasOverride": false
+      "damage": 260
     }
   ],
-  "nbtTemplate": {
+  "defaultAmmo": {
+    "superbwarfare:small_shell_aa": 64,
+    "superbwarfare:medium_anti_air_missile": 16
+  },
+  "spawnNbt": {
     "Energy": 5000000,
     "Health": 300,
     "Invulnerable": 0,
@@ -60,44 +61,6 @@
     "TurretHealth": 100,
     "TurretDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Cannon": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "FimMissile": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    },
-    "Inventory": {
-      "Items": [
-        {
-          "Slot": 0,
-          "count": 64,
-          "id": "superbwarfare:small_shell_aa"
-        },
-        {
-          "Slot": 1,
-          "count": 16,
-          "id": "superbwarfare:medium_anti_air_missile"
-        }
-      ]
-    }
-  },
-  "ammoSlots": {
-    "superbwarfare:small_shell_aa": 64,
-    "superbwarfare:medium_anti_air_missile": 16
+    "TurretBurnTimer": 0
   }
 }

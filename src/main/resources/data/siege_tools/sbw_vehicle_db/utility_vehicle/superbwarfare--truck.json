@@ -1,24 +1,24 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:truck",
   "mod": "superbwarfare",
-  "category": "utility_vehicle",
-  "baseName": "truck",
   "displayType": "Car",
-  "maxHealth": 300,
-  "maxEnergy": 5000000,
-  "hasDecoy": false,
-  "engineType": "Wheel",
-  "mass": 100,
-  "upStep": 1.5,
-  "containerType": "Huge",
   "hudType": null,
+  "stats": {
+    "maxHealth": 300,
+    "maxEnergy": 5000000,
+    "mass": 100,
+    "upStep": 1.5,
+    "seatCount": 2,
+    "containerType": "Huge",
+    "engineType": "Wheel",
+    "hasDecoy": false
+  },
   "parts": [
     "WheelRight",
     "WheelLeft"
   ],
-  "seatCount": 2,
-  "weapons": [],
-  "nbtTemplate": {
+  "spawnNbt": {
     "Energy": 5000000,
     "Health": 300,
     "Invulnerable": 0,
@@ -30,6 +30,5 @@
     "RightWheelDamaged": 0,
     "LeftWheelHealth": 100,
     "LeftWheelDamaged": 0
-  },
-  "ammoSlots": {}
+  }
 }

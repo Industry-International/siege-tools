@@ -1,36 +1,35 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:laser_tower",
   "mod": "superbwarfare",
-  "category": "defense_turret",
-  "baseName": "laser_tower",
   "displayType": "Defense",
-  "maxHealth": 100,
-  "maxEnergy": 500000,
-  "hasDecoy": false,
-  "engineType": "Fixed",
-  "mass": 0.5,
-  "upStep": 0,
-  "containerType": "Empty",
   "hudType": null,
+  "stats": {
+    "maxHealth": 100,
+    "maxEnergy": 500000,
+    "mass": 0.5,
+    "upStep": 0,
+    "seatCount": 0,
+    "containerType": "Empty",
+    "engineType": "Fixed",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 0,
   "weapons": [
     {
       "key": "Main",
-      "displayKey": "Main",
       "ammoTypes": [
         "FE"
       ],
       "magazine": 1,
       "rpm": 30,
-      "damage": 15,
-      "hasOverride": false
+      "damage": 15
     }
   ],
-  "nbtTemplate": {
+  "spawnNbt": {
     "Energy": 500000,
     "Health": 100,
     "Invulnerable": 0,
@@ -43,18 +42,6 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Main": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    }
-  },
-  "ammoSlots": {}
+    "TurretBurnTimer": 0
+  }
 }

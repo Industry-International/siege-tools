@@ -1,21 +1,20 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:tiny_speedboat",
   "mod": "superbwarfare",
-  "category": "naval",
-  "baseName": "tiny_speedboat",
   "displayType": "Boat",
-  "maxHealth": 80,
-  "maxEnergy": 100000,
-  "hasDecoy": false,
-  "engineType": "Ship",
-  "mass": 0.07,
-  "upStep": 0,
-  "containerType": "Empty",
   "hudType": null,
-  "parts": [],
-  "seatCount": 0,
-  "weapons": [],
-  "nbtTemplate": {
+  "stats": {
+    "maxHealth": 80,
+    "maxEnergy": 100000,
+    "mass": 0.07,
+    "upStep": 0,
+    "seatCount": 0,
+    "containerType": "Empty",
+    "engineType": "Ship",
+    "hasDecoy": false
+  },
+  "spawnNbt": {
     "Energy": 100000,
     "Health": 80,
     "Invulnerable": 0,
@@ -23,6 +22,5 @@
     "Power": 0,
     "DecoyReady": 1,
     "ChargeProgress": 0
-  },
-  "ammoSlots": {}
+  }
 }

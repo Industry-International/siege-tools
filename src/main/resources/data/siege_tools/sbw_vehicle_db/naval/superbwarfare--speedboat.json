@@ -1,35 +1,37 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:speedboat",
   "mod": "superbwarfare",
-  "category": "naval",
-  "baseName": "speedboat",
   "displayType": "Boat",
-  "maxHealth": 200,
-  "maxEnergy": 500000,
-  "hasDecoy": true,
-  "engineType": "Ship",
-  "mass": 1.5,
-  "upStep": 0,
-  "containerType": "Medium",
   "hudType": null,
+  "stats": {
+    "maxHealth": 200,
+    "maxEnergy": 500000,
+    "mass": 1.5,
+    "upStep": 0,
+    "seatCount": 5,
+    "containerType": "Medium",
+    "engineType": "Ship",
+    "hasDecoy": true
+  },
   "parts": [
     "Turret"
   ],
-  "seatCount": 5,
   "weapons": [
     {
       "key": "MachineGun",
-      "displayKey": "MachineGun",
       "ammoTypes": [
         "superbwarfare:heavy_ammo"
       ],
       "magazine": 1,
       "rpm": 450,
-      "damage": 40,
-      "hasOverride": false
+      "damage": 40
     }
   ],
-  "nbtTemplate": {
+  "defaultAmmo": {
+    "superbwarfare:heavy_ammo": 128
+  },
+  "spawnNbt": {
     "Energy": 500000,
     "Health": 200,
     "Invulnerable": 0,
@@ -40,29 +42,6 @@
     "TurretHealth": 100,
     "TurretDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "MachineGun": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    },
-    "Inventory": {
-      "Items": [
-        {
-          "Slot": 0,
-          "count": 128,
-          "id": "superbwarfare:heavy_ammo"
-        }
-      ]
-    }
-  },
-  "ammoSlots": {
-    "superbwarfare:heavy_ammo": 128
+    "TurretBurnTimer": 0
   }
 }

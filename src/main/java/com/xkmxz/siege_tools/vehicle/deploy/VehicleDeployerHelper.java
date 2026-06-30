@@ -55,21 +55,17 @@ public class VehicleDeployerHelper {
         float yaw = be.getYaw(), pitch = be.getPitch();
         String tag = makeDeployTag(pos);
 
-        // 从数据库获取车辆信息的 nbtTemplate
-        JsonObject vehicleInfo = VehicleDataManager.getVehicle(vehicleType);
-        CompoundTag nbt = new CompoundTag();
+        // 从数据库获取车辆数据
+        com.xkmxz.siege_tools.vehicle.data.VehicleData vehicleInfo = VehicleDataManager.getVehicle(vehicleType);
+        CompoundTag nbt;
 
-        if (vehicleInfo != null && vehicleInfo.has("nbtTemplate")) {
-            JsonObject template = vehicleInfo.getAsJsonObject("nbtTemplate");
-            nbt = JsonToNBTConverter.toCompoundTag(template);
+        if (vehicleInfo != null) {
+            // 使用加载时已生成的完整 spawnNbt（含 Inventory + WeaponState）
+            nbt = vehicleInfo.fullSpawnNbt().copy();
             LOGGER.info("[Deploy] 使用数据库模板: {}", vehicleType);
-
-            // 写入分类信息
-            if (vehicleInfo.has("category")) {
-                // 存到 persistentData 或直接作为 NBT 的一部分
-            }
         } else {
             LOGGER.warn("[Deploy] 数据库未找到车辆 {}，使用空白模板", vehicleType);
+            nbt = new CompoundTag();
         }
 
         // 叠加 Rotation

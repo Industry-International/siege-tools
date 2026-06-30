@@ -1,70 +1,24 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:sodayo_pick_up_rocket",
   "mod": "superbwarfare",
-  "category": "utility_vehicle",
-  "baseName": "sodayo_pick_up_rocket",
   "displayType": "Car",
-  "maxHealth": 175,
-  "maxEnergy": 5000000,
-  "hasDecoy": false,
-  "engineType": "Wheel",
-  "mass": 3,
-  "upStep": 1.1,
-  "containerType": "Special",
   "hudType": null,
+  "stats": {
+    "maxHealth": 175,
+    "maxEnergy": 5000000,
+    "mass": 3,
+    "upStep": 1.1,
+    "seatCount": 2,
+    "containerType": "Special",
+    "engineType": "Wheel",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 2,
-  "weapons": [
-    {
-      "key": "Rocket",
-      "displayKey": "@Rocket",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": null,
-      "hasOverride": false
-    },
-    {
-      "key": "Main",
-      "displayKey": "Main",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": null,
-      "hasOverride": false
-    },
-    {
-      "key": "AP",
-      "displayKey": "AP",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": 500,
-      "hasOverride": false
-    },
-    {
-      "key": "HE",
-      "displayKey": "HE",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": 200,
-      "hasOverride": false
-    },
-    {
-      "key": "CM",
-      "displayKey": "CM",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": 300,
-      "hasOverride": false
-    }
-  ],
-  "nbtTemplate": {
+  "spawnNbt": {
     "Energy": 5000000,
     "Health": 175,
     "Invulnerable": 0,
@@ -77,54 +31,6 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Rocket": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "Main": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "AP": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "HE": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      },
-      "CM": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    }
-  },
-  "ammoSlots": {}
+    "TurretBurnTimer": 0
+  }
 }

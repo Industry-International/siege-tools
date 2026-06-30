@@ -1,36 +1,36 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:tom_6",
   "mod": "superbwarfare",
-  "category": "aircraft",
-  "baseName": "tom_6",
   "displayType": "Airplane",
-  "maxHealth": 40,
-  "maxEnergy": 100000,
-  "hasDecoy": false,
-  "engineType": "Tom6",
-  "mass": 0.02,
-  "upStep": 1.1,
-  "containerType": "Empty",
   "hudType": null,
+  "stats": {
+    "maxHealth": 40,
+    "maxEnergy": 100000,
+    "mass": 0.02,
+    "upStep": 1.1,
+    "seatCount": 0,
+    "containerType": "Empty",
+    "engineType": "Tom6",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 0,
   "weapons": [
     {
       "key": "MelonBomb",
-      "displayKey": "MelonBomb",
       "ammoTypes": [
         "minecraft:melon"
       ],
-      "magazine": 1,
-      "rpm": null,
-      "damage": null,
-      "hasOverride": false
+      "magazine": 1
     }
   ],
-  "nbtTemplate": {
+  "defaultAmmo": {
+    "minecraft:melon": 64
+  },
+  "spawnNbt": {
     "Energy": 100000,
     "Health": 40,
     "Invulnerable": 0,
@@ -43,29 +43,6 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "MelonBomb": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    },
-    "Inventory": {
-      "Items": [
-        {
-          "Slot": 0,
-          "count": 64,
-          "id": "minecraft:melon"
-        }
-      ]
-    }
-  },
-  "ammoSlots": {
-    "minecraft:melon": 64
+    "TurretBurnTimer": 0
   }
 }

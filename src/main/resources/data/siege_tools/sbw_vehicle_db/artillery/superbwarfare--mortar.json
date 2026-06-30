@@ -1,34 +1,24 @@
 {
+  "formatVersion": 1,
   "vehicleId": "superbwarfare:mortar",
   "mod": "superbwarfare",
-  "category": "artillery",
-  "baseName": "mortar",
   "displayType": "Artillery",
-  "maxHealth": 40,
-  "maxEnergy": 10000000,
-  "hasDecoy": false,
-  "engineType": "Fixed",
-  "mass": 0.05,
-  "upStep": 0,
-  "containerType": "One",
   "hudType": null,
+  "stats": {
+    "maxHealth": 40,
+    "maxEnergy": 10000000,
+    "mass": 0.05,
+    "upStep": 0,
+    "seatCount": 0,
+    "containerType": "One",
+    "engineType": "Fixed",
+    "hasDecoy": false
+  },
   "parts": [
     "Turret",
     "MainEngine"
   ],
-  "seatCount": 0,
-  "weapons": [
-    {
-      "key": "Main",
-      "displayKey": "Main",
-      "ammoTypes": [],
-      "magazine": 1,
-      "rpm": null,
-      "damage": 60,
-      "hasOverride": false
-    }
-  ],
-  "nbtTemplate": {
+  "spawnNbt": {
     "Energy": 10000000,
     "Health": 40,
     "Invulnerable": 0,
@@ -41,18 +31,6 @@
     "MainEngineHealth": 150,
     "MainEngineDamaged": 0,
     "TurretBurned": 0,
-    "TurretBurnTimer": 0,
-    "WeaponState": {
-      "Main": {
-        "components": {
-          "minecraft:custom_data": {
-            "GunData": {
-              "Ammo": 1
-            }
-          }
-        }
-      }
-    }
-  },
-  "ammoSlots": {}
+    "TurretBurnTimer": 0
+  }
 }

@@ -1,0 +1,69 @@
+{
+  "vehicleId": "superbwarfare:sodayo_pick_up_hmg",
+  "mod": "superbwarfare",
+  "category": "utility_vehicle",
+  "baseName": "sodayo_pick_up_hmg",
+  "displayType": "Car",
+  "maxHealth": 175,
+  "maxEnergy": 5000000,
+  "hasDecoy": false,
+  "engineType": "Wheel",
+  "mass": 3,
+  "upStep": 1.1,
+  "containerType": "Small",
+  "hudType": null,
+  "parts": [
+    "WheelRight",
+    "WheelLeft"
+  ],
+  "seatCount": 3,
+  "weapons": [
+    {
+      "key": "MachineGun",
+      "displayKey": "MachineGun",
+      "ammoTypes": [
+        "superbwarfare:heavy_ammo"
+      ],
+      "magazine": 1,
+      "rpm": 450,
+      "damage": 40,
+      "hasOverride": false
+    }
+  ],
+  "nbtTemplate": {
+    "Energy": 5000000,
+    "Health": 175,
+    "Invulnerable": 0,
+    "IsWreck": 0,
+    "Power": 0,
+    "DecoyReady": 1,
+    "ChargeProgress": 0,
+    "RightWheelHealth": 100,
+    "RightWheelDamaged": 0,
+    "LeftWheelHealth": 100,
+    "LeftWheelDamaged": 0,
+    "WeaponState": {
+      "MachineGun": {
+        "components": {
+          "minecraft:custom_data": {
+            "GunData": {
+              "Ammo": 1
+            }
+          }
+        }
+      }
+    },
+    "Inventory": {
+      "Items": [
+        {
+          "Slot": 0,
+          "count": 128,
+          "id": "superbwarfare:heavy_ammo"
+        }
+      ]
+    }
+  },
+  "ammoSlots": {
+    "superbwarfare:heavy_ammo": 128
+  }
+}
